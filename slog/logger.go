@@ -83,50 +83,58 @@ func (l *Logger) SetOutput(w io.Writer) {
 	l.setOutput(newLineOutput(w))
 }
 
-func (l *Logger) Verbose(v ...interface{}) {
-	l.Output(2, LevelVerbose, []byte(fmt.Sprint(v...)))
-}
-
-func (l *Logger) Verbosef(format string, v ...interface{}) {
-	l.Output(2, LevelVerbose, []byte(fmt.Sprintf(format, v...)))
-}
-
-func (l *Logger) Debug(v ...interface{}) {
-	l.Output(2, LevelDebug, []byte(fmt.Sprint(v...)))
-}
-
-func (l *Logger) Debugf(format string, v ...interface{}) {
-	l.Output(2, LevelDebug, []byte(fmt.Sprintf(format, v...)))
-}
-
-func (l *Logger) Info(v ...interface{}) {
-	l.Output(2, LevelInfo, []byte(fmt.Sprint(v...)))
-}
-
-func (l *Logger) Infof(format string, v ...interface{}) {
-	l.Output(2, LevelInfo, []byte(fmt.Sprintf(format, v...)))
-}
-
-func (l *Logger) Warning(v ...interface{}) {
-	l.Output(2, LevelWarning, []byte(fmt.Sprint(v...)))
-}
-
-func (l *Logger) Warningf(format string, v ...interface{}) {
-	l.Output(2, LevelWarning, []byte(fmt.Sprintf(format, v...)))
-}
-
-func (l *Logger) Error(v ...interface{}) {
-	l.Output(2, LevelError, []byte(fmt.Sprint(v...)))
-}
-
-func (l *Logger) Errorf(format string, v ...interface{}) {
-	l.Output(2, LevelError, []byte(fmt.Sprintf(format, v...)))
+func (l *Logger) Fatalf(format string, v ...interface{}) {
+	l.Output(2, LevelFatal, []byte(fmt.Sprintf(format, v...)))
 }
 
 func (l *Logger) Fatal(v ...interface{}) {
 	l.Output(2, LevelFatal, []byte(fmt.Sprint(v...)))
 }
 
-func (l *Logger) Fatalf(format string, v ...interface{}) {
-	l.Output(2, LevelFatal, []byte(fmt.Sprintf(format, v...)))
+func (l *Logger) Errorf(format string, v ...interface{}) {
+	l.Output(2, LevelError, []byte(fmt.Sprintf(format, v...)))
+}
+
+func (l *Logger) Error(v ...interface{}) {
+	l.Output(2, LevelError, []byte(fmt.Sprint(v...)))
+}
+
+func (l *Logger) Warningf(format string, v ...interface{}) {
+	l.Output(2, LevelWarning, []byte(fmt.Sprintf(format, v...)))
+}
+
+func (l *Logger) Warning(v ...interface{}) {
+	l.Output(2, LevelWarning, []byte(fmt.Sprint(v...)))
+}
+
+func (l *Logger) Noticef(format string, v ...interface{}) {
+	l.Output(2, LevelNotice, []byte(fmt.Sprintf(format, v...)))
+}
+
+func (l *Logger) Notice(v ...interface{}) {
+	l.Output(2, LevelNotice, []byte(fmt.Sprint(v...)))
+}
+
+func (l *Logger) Infof(format string, v ...interface{}) {
+	l.Output(2, LevelInfo, []byte(fmt.Sprintf(format, v...)))
+}
+
+func (l *Logger) Info(v ...interface{}) {
+	l.Output(2, LevelInfo, []byte(fmt.Sprint(v...)))
+}
+
+func (l *Logger) Debugf(format string, v ...interface{}) {
+	l.Output(2, LevelDebug, []byte(fmt.Sprintf(format, v...)))
+}
+
+func (l *Logger) Debug(v ...interface{}) {
+	l.Output(2, LevelDebug, []byte(fmt.Sprint(v...)))
+}
+
+func (l *Logger) Verbosef(format string, v ...interface{}) {
+	l.Output(2, LevelVerbose, []byte(fmt.Sprintf(format, v...)))
+}
+
+func (l *Logger) Verbose(v ...interface{}) {
+	l.Output(2, LevelVerbose, []byte(fmt.Sprint(v...)))
 }

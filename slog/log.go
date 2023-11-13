@@ -1,8 +1,10 @@
 package slog
 
 import (
+	"errors"
 	"fmt"
 	"os"
+	"reflect"
 	"sync"
 )
 
@@ -36,62 +38,70 @@ func Default() *Logger {
 	return std
 }
 
-func Verbose(v ...interface{}) {
-	std.Output(2, LevelVerbose, []byte(fmt.Sprint(v...)))
-}
-
-func Verbosef(format string, v ...interface{}) {
-	std.Output(2, LevelVerbose, []byte(fmt.Sprintf(format, v...)))
-}
-
-func Debug(v ...interface{}) {
-	std.Output(2, LevelDebug, []byte(fmt.Sprint(v...)))
-}
-
-func Debugf(format string, v ...interface{}) {
-	std.Output(2, LevelDebug, []byte(fmt.Sprintf(format, v...)))
-}
-
-func Notice(v ...interface{}) {
-	std.Output(2, LevelNotice, []byte(fmt.Sprint(v...)))
-}
-
-func Noticef(format string, v ...interface{}) {
-	std.Output(2, LevelNotice, []byte(fmt.Sprintf(format, v...)))
-}
-
-func Info(v ...interface{}) {
-	std.Output(2, LevelInfo, []byte(fmt.Sprint(v...)))
-}
-
-func Infof(format string, v ...interface{}) {
-	std.Output(2, LevelInfo, []byte(fmt.Sprintf(format, v...)))
-}
-
-func Warning(v ...interface{}) {
-	std.Output(2, LevelWarning, []byte(fmt.Sprint(v...)))
-}
-
-func Warningf(format string, v ...interface{}) {
-	std.Output(2, LevelWarning, []byte(fmt.Sprintf(format, v...)))
-}
-
-func Error(v ...interface{}) {
-	std.Output(2, LevelError, []byte(fmt.Sprint(v...)))
-}
-
-func Errorf(format string, v ...interface{}) {
-	std.Output(2, LevelError, []byte(fmt.Sprintf(format, v...)))
-}
-
-func Fatal(v ...interface{}) {
-	std.Output(2, LevelFatal, []byte(fmt.Sprint(v...)))
+func Output(calldepth int, level int, msg []byte) {
+	std.Output(calldepth+1, level, msg)
 }
 
 func Fatalf(format string, v ...interface{}) {
 	std.Output(2, LevelFatal, []byte(fmt.Sprintf(format, v...)))
 }
 
-func Output(calldepth int, level int, msg []byte) {
-	std.Output(calldepth+1, level, msg)
+func Fatal(v ...interface{}) {
+	std.Output(2, LevelFatal, []byte(fmt.Sprint(v...)))
+}
+
+func Errorf(format string, v ...interface{}) {
+	std.Output(2, LevelError, []byte(fmt.Sprintf(format, v...)))
+}
+
+func Error(v ...interface{}) {
+	std.Output(2, LevelError, []byte(fmt.Sprint(v...)))
+}
+
+func Warningf(format string, v ...interface{}) {
+	std.Output(2, LevelWarning, []byte(fmt.Sprintf(format, v...)))
+}
+
+func Warning(v ...interface{}) {
+	std.Output(2, LevelWarning, []byte(fmt.Sprint(v...)))
+}
+
+func Noticef(format string, v ...interface{}) {
+	std.Output(2, LevelNotice, []byte(fmt.Sprintf(format, v...)))
+}
+
+func Notice(v ...interface{}) {
+	std.Output(2, LevelNotice, []byte(fmt.Sprint(v...)))
+}
+
+func Infof(format string, v ...interface{}) {
+	std.Output(2, LevelInfo, []byte(fmt.Sprintf(format, v...)))
+}
+
+func Info(v ...interface{}) {
+	std.Output(2, LevelInfo, []byte(fmt.Sprint(v...)))
+}
+
+func Debugf(format string, v ...interface{}) {
+	std.Output(2, LevelDebug, []byte(fmt.Sprintf(format, v...)))
+}
+
+func Debug(v ...interface{}) {
+	std.Output(2, LevelDebug, []byte(fmt.Sprint(v...)))
+}
+
+func Verbosef(format string, v ...interface{}) {
+	std.Output(2, LevelVerbose, []byte(fmt.Sprintf(format, v...)))
+}
+
+func Verbose(v ...interface{}) {
+	std.Output(2, LevelVerbose, []byte(fmt.Sprint(v...)))
+}
+
+func Perror(level int, s string, err error) {
+	if reflect.TypeOf(err) == reflect.TypeOf(errors.New("")) {
+		std.Output(2, level, []byte(fmt.Sprintf("%s: %v", s, err)))
+	} else {
+		std.Output(2, level, []byte(fmt.Sprintf("%s: (%T) %v", s, err, err)))
+	}
 }
