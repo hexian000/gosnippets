@@ -1,10 +1,25 @@
 package formats
 
 import (
+	"errors"
 	"fmt"
 	"math"
+	"reflect"
 	"time"
 )
+
+var errFormat = errors.New("format error")
+
+func Error(err error) string {
+	if err == nil {
+		return "nil"
+	}
+	// errors.errorString
+	if reflect.TypeOf(err) == reflect.TypeOf(errFormat) {
+		return err.Error()
+	}
+	return fmt.Sprintf("(%T) %v", err, err)
+}
 
 func isNormal(f float64) bool {
 	return !math.IsNaN(f) && !math.IsInf(f, 0) && f != 0.0

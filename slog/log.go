@@ -1,10 +1,8 @@
 package slog
 
 import (
-	"errors"
 	"fmt"
 	"os"
-	"reflect"
 	"sync"
 )
 
@@ -96,12 +94,4 @@ func Verbosef(format string, v ...interface{}) {
 
 func Verbose(v ...interface{}) {
 	std.Output(2, LevelVerbose, []byte(fmt.Sprint(v...)))
-}
-
-func Perror(level int, s string, err error) {
-	if reflect.TypeOf(err) == reflect.TypeOf(errors.New("")) {
-		std.Output(2, level, []byte(fmt.Sprintf("%s: %v", s, err)))
-	} else {
-		std.Output(2, level, []byte(fmt.Sprintf("%s: (%T) %v", s, err, err)))
-	}
 }
