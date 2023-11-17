@@ -83,6 +83,36 @@ func (l *Logger) SetOutput(w io.Writer) {
 	l.setOutput(newLineOutput(w))
 }
 
+func (l *Logger) Checkf(cond bool, format string, v ...interface{}) {
+	if cond {
+		return
+	}
+	s := fmt.Sprintf(format, v...)
+	l.Output(2, LevelFatal, []byte(s))
+	panic(s)
+}
+
+func (l *Logger) Check(cond bool, v ...interface{}) {
+	if cond {
+		return
+	}
+	s := fmt.Sprint(v...)
+	l.Output(2, LevelFatal, []byte(s))
+	panic(s)
+}
+
+func (l *Logger) Panicf(format string, v ...interface{}) {
+	s := fmt.Sprintf(format, v...)
+	l.Output(2, LevelFatal, []byte(s))
+	panic(s)
+}
+
+func (l *Logger) Panic(v ...interface{}) {
+	s := fmt.Sprint(v...)
+	l.Output(2, LevelFatal, []byte(s))
+	panic(s)
+}
+
 func (l *Logger) Fatalf(format string, v ...interface{}) {
 	l.Output(2, LevelFatal, []byte(fmt.Sprintf(format, v...)))
 }
