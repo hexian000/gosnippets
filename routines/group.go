@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	ErrStopping         = errors.New("routines group is closed")
+	ErrClosed           = errors.New("routines group is closed")
 	ErrConcurrencyLimit = errors.New("concurrency limit is exceeded")
 )
 
@@ -47,7 +47,7 @@ func (g *group) Go(f func()) error {
 	if g.routineCh != nil {
 		select {
 		case <-g.closeCh:
-			return ErrStopping
+			return ErrClosed
 		case g.routineCh <- struct{}{}:
 		default:
 			return ErrConcurrencyLimit
@@ -55,7 +55,7 @@ func (g *group) Go(f func()) error {
 	} else {
 		select {
 		case <-g.closeCh:
-			return ErrStopping
+			return ErrClosed
 		default:
 		}
 	}
