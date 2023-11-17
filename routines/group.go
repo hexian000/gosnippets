@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	ErrStopping         = errors.New("routines group is stopping")
+	ErrStopping         = errors.New("routines group is closed")
 	ErrConcurrencyLimit = errors.New("concurrency limit is exceeded")
 )
 

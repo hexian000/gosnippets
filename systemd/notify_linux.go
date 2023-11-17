@@ -1,6 +1,6 @@
 //go:build linux
 
-package daemon
+package systemd
 
 import (
 	"net"

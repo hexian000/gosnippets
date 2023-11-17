@@ -5,6 +5,7 @@ import (
 	"net"
 	"sync/atomic"
 
+	"github.com/hexian000/gosnippets/formats"
 	"github.com/hexian000/gosnippets/slog"
 )
 
@@ -52,7 +53,7 @@ func (l *Listener) Accept() (net.Conn, error) {
 		l.stats.Accepted.Add(1)
 		if l.isLimited() {
 			if err := conn.Close(); err != nil {
-				slog.Warningf("close: (%T) %v", err, err)
+				slog.Warningf("close: %s", formats.Error(err))
 			}
 			continue
 		}

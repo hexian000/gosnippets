@@ -1,4 +1,4 @@
-package daemon
+package systemd
 
 const (
 	Ready     = "READY=1"
