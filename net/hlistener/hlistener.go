@@ -36,10 +36,10 @@ func (l *listener) isLimited() bool {
 	if l.c.MaxSessions > 0 && numSessions > l.c.MaxSessions {
 		return true
 	}
-	if numHalfOpen > l.c.Full {
+	if l.c.Full > 0 && numHalfOpen > l.c.Full {
 		return true
 	}
-	if numHalfOpen > l.c.Start {
+	if l.c.Start > 0 && numHalfOpen > l.c.Start {
 		return rand.Float64() < l.c.Rate
 	}
 	return false
