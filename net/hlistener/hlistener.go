@@ -12,7 +12,7 @@ import (
 
 type Config struct {
 	Start, Full uint32
-	Rate        int // 0-100
+	Rate        float64 // 0-1
 	MaxSessions uint32
 	Stats       func() (numSessions uint32, numHalfOpen uint32)
 }
@@ -33,14 +33,14 @@ type listener struct {
 
 func (l *listener) isLimited() bool {
 	numSessions, numHalfOpen := l.c.Stats()
-	if l.c.MaxSessions > 0 && numSessions >= l.c.MaxSessions {
+	if l.c.MaxSessions > 0 && numSessions > l.c.MaxSessions {
 		return true
 	}
-	if numHalfOpen >= l.c.Full {
+	if numHalfOpen > l.c.Full {
 		return true
 	}
-	if numHalfOpen >= l.c.Start {
-		return rand.Intn(100) < l.c.Rate
+	if numHalfOpen > l.c.Start {
+		return rand.Float64() < l.c.Rate
 	}
 	return false
 }
