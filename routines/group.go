@@ -63,7 +63,7 @@ type limitedGroup struct {
 	closeCh   chan struct{}
 }
 
-func NewLimitedGroup(limit uint32) Group {
+func NewLimitedGroup(limit int) Group {
 	g := &limitedGroup{
 		routineCh: make(chan struct{}, limit),
 		closeCh:   make(chan struct{}),
