@@ -33,14 +33,15 @@ func init() {
 }
 
 var levelMap = [...]byte{
-	LevelSilence: 8, /* ANDROID_LOG_SILENT */
-	LevelFatal:   7, /* ANDROID_LOG_FATAL */
-	LevelError:   6, /* ANDROID_LOG_ERROR */
-	LevelWarning: 5, /* ANDROID_LOG_WARN */
-	LevelNotice:  4, /* ANDROID_LOG_INFO */
-	LevelInfo:    4, /* ANDROID_LOG_INFO */
-	LevelDebug:   3, /* ANDROID_LOG_DEBUG */
-	LevelVerbose: 2, /* ANDROID_LOG_VERBOSE */
+	LevelSilence:     8, /* ANDROID_LOG_SILENT */
+	LevelFatal:       7, /* ANDROID_LOG_FATAL */
+	LevelError:       6, /* ANDROID_LOG_ERROR */
+	LevelWarning:     5, /* ANDROID_LOG_WARN */
+	LevelNotice:      4, /* ANDROID_LOG_INFO */
+	LevelInfo:        4, /* ANDROID_LOG_INFO */
+	LevelDebug:       3, /* ANDROID_LOG_DEBUG */
+	LevelVerbose:     2, /* ANDROID_LOG_VERBOSE */
+	LevelVeryVerbose: 2, /* ANDROID_LOG_VERBOSE */
 }
 
 func (l *logdOutput) Write(m logMessage) {

@@ -37,6 +37,7 @@ var priorityMap = [...]func(*syslog.Writer, string) error{
 	(*syslog.Writer).Info,
 	(*syslog.Writer).Debug,
 	(*syslog.Writer).Debug,
+	(*syslog.Writer).Debug,
 }
 
 func (s *syslogOutput) Write(m logMessage) {

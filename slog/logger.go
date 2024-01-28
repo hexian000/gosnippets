@@ -168,3 +168,11 @@ func (l *Logger) Verbosef(format string, v ...interface{}) {
 func (l *Logger) Verbose(v ...interface{}) {
 	l.Output(2, LevelVerbose, []byte(fmt.Sprint(v...)))
 }
+
+func (l *Logger) VeryVerbosef(format string, v ...interface{}) {
+	l.Output(2, LevelVeryVerbose, []byte(fmt.Sprintf(format, v...)))
+}
+
+func (l *Logger) VeryVerbose(v ...interface{}) {
+	l.Output(2, LevelVeryVerbose, []byte(fmt.Sprint(v...)))
+}
