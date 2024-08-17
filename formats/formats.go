@@ -80,12 +80,10 @@ func DurationSeconds(d time.Duration) string {
 	if value < 0 {
 		value = -value
 	}
-	second := uint8(value % 60)
-	value /= 60
-	minute := uint8(value % 60)
-	value /= 60
-	hour := uint8(value % 24)
-	value /= 24
+	var second, minute, hour uint8
+	second, value = uint8(value%60), value/60
+	minute, value = uint8(value%60), value/60
+	hour, value = uint8(value%24), value/24
 	day := value
 	if day != 0 {
 		return fmt.Sprintf("%s%dd%02d:%02d:%02d", sign, day, hour, minute, second)
@@ -106,14 +104,12 @@ func DurationMillis(d time.Duration) string {
 	if value < 0 {
 		value = -value
 	}
-	milli := uint16(value % 1000)
-	value /= 1000
-	second := uint8(value % 60)
-	value /= 60
-	minute := uint8(value % 60)
-	value /= 60
-	hour := uint8(value % 24)
-	value /= 24
+	var milli uint16
+	var second, minute, hour uint8
+	milli, value = uint16(value%1000), value/1000
+	second, value = uint8(value%60), value/60
+	minute, value = uint8(value%60), value/60
+	hour, value = uint8(value%24), value/24
 	day := value
 	if day != 0 {
 		return fmt.Sprintf("%s%dd%02d:%02d:%02d.%03d", sign, day, hour, minute, second, milli)
@@ -133,15 +129,12 @@ func DurationNanos(d time.Duration) string {
 		sign = "-"
 		s = int64(-1)
 	}
-	nano := uint32(value % 1000000000 * s)
-	value /= 1000000000
-	value *= s
-	second := uint8(value % 60)
-	value /= 60
-	minute := uint8(value % 60)
-	value /= 60
-	hour := uint8(value % 24)
-	value /= 24
+	var nano uint32
+	var second, minute, hour uint8
+	nano, value = uint32(value%1000000000*s), value/1000000000*s
+	second, value = uint8(value%60), value/60
+	minute, value = uint8(value%60), value/60
+	hour, value = uint8(value%24), value/24
 	day := value
 	if day != 0 {
 		return fmt.Sprintf("%s%dd%02d:%02d:%02d.%09d", sign, day, hour, minute, second, nano)
@@ -161,19 +154,14 @@ func Duration(d time.Duration) string {
 		sign = "-"
 		s = int64(-1)
 	}
-	nano := uint16(value % 1000 * s)
-	value /= 1000
-	value *= s
-	micro := uint16(value % 1000)
-	value /= 1000
-	milli := uint16(value % 1000)
-	value /= 1000
-	second := uint8(value % 60)
-	value /= 60
-	minute := uint8(value % 60)
-	value /= 60
-	hour := uint8(value % 24)
-	value /= 24
+	var nano, micro, milli uint16
+	var second, minute, hour uint8
+	nano, value = uint16(value%1000*s), value/1000*s
+	micro, value = uint16(value%1000), value/1000
+	milli, value = uint16(value%1000), value/1000
+	second, value = uint8(value%60), value/60
+	minute, value = uint8(value%60), value/60
+	hour, value = uint8(value%24), value/24
 	day := value
 	if day != 0 {
 		seconds := float64(second) + float64(milli)*1e-3 + float64(micro)*1e-6 + float64(nano)*1e-9
