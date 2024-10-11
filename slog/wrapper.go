@@ -3,13 +3,13 @@ package slog
 import "log"
 
 type wrapper struct {
-	*Logger
+	l     *Logger
 	level int
 }
 
 func (w *wrapper) Write(p []byte) (n int, err error) {
 	const calldepth = 4
-	w.Output(calldepth, w.level, p)
+	w.l.Write(calldepth, w.level, p)
 	return len(p), nil
 }
 

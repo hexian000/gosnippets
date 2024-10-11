@@ -8,23 +8,21 @@ import (
 	"net"
 	"os"
 	"strconv"
-	"sync"
 )
 
-type logdOutput struct {
-	mu  sync.Mutex
+type logdWriter struct {
 	tag []byte
 	buf []byte
 	out net.Conn
 }
 
 func init() {
-	builtinOutput["syslog"] = func(tag string) (logOutput, error) {
+	builtinOutput["syslog"] = func(tag string) (Writer, error) {
 		conn, err := net.Dial("unixgram", "/dev/socket/logdw")
 		if err != nil {
 			return nil, err
 		}
-		return &logdOutput{
+		return &logdWriter{
 			tag: []byte(tag),
 			buf: make([]byte, 11), // android_log_header_t
 			out: conn,
@@ -44,9 +42,7 @@ var levelMap = [...]byte{
 	LevelVeryVerbose: 2, /* ANDROID_LOG_VERBOSE */
 }
 
-func (l *logdOutput) Write(m logMessage) {
-	l.mu.Lock()
-	defer l.mu.Unlock()
+func (l *logdWriter) Write(m Message) {
 	buf := l.buf[:11]
 	buf[0] = 0 // LOG_ID_MAIN
 	le := binary.LittleEndian

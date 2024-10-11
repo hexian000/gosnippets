@@ -4,11 +4,10 @@ import (
 	"io"
 	"os"
 	"strconv"
-	"sync"
 	"time"
 )
 
-type logMessage struct {
+type message struct {
 	timestamp time.Time
 	level     int
 	file      []byte
@@ -16,43 +15,32 @@ type logMessage struct {
 	msg       []byte
 }
 
-type logOutput interface {
-	Write(m logMessage)
+type writer interface {
+	Write(m message)
 }
 
-var builtinOutput map[string]func(tag string) (logOutput, error)
+type discardWriter struct{}
 
-func init() {
-	builtinOutput = map[string]func(tag string) (logOutput, error){
-		"discard": func(string) (logOutput, error) {
-			return nil, nil
-		},
-		"stdout": func(string) (logOutput, error) {
-			return newLineOutput(os.Stdout), nil
-		},
-		"stderr": func(string) (logOutput, error) {
-			return newLineOutput(os.Stderr), nil
-		},
-	}
+func newDiscardWriter() writer {
+	return &discardWriter{}
 }
 
-type lineOutput struct {
-	mu  sync.Mutex
+func (w *discardWriter) Write(_ message) {}
+
+type lineWriter struct {
 	buf []byte
 	out io.Writer
 }
 
-func newLineOutput(out io.Writer) logOutput {
-	return &lineOutput{
+func newLineWriter(out io.Writer) writer {
+	return &lineWriter{
 		buf: make([]byte, 0),
 		out: out,
 	}
 }
 
-func (l *lineOutput) Write(m logMessage) {
-	l.mu.Lock()
-	defer l.mu.Unlock()
-	buf := l.buf[:0]
+func (w *lineWriter) Write(m message) {
+	buf := w.buf[:0]
 	buf = append(buf, levelChar[m.level], ' ')
 	buf = m.timestamp.AppendFormat(buf, time.RFC3339)
 	buf = append(buf, ' ')
@@ -62,6 +50,22 @@ func (l *lineOutput) Write(m logMessage) {
 	buf = append(buf, ' ')
 	buf = append(buf, m.msg...)
 	buf = append(buf, '\n')
-	l.buf = buf
-	_, _ = l.out.Write(buf)
+	w.buf = buf
+	_, _ = w.out.Write(buf)
+}
+
+var builtinOutput map[string]func(tag string) (writer, error)
+
+func init() {
+	builtinOutput = map[string]func(tag string) (writer, error){
+		"discard": func(string) (writer, error) {
+			return newDiscardWriter(), nil
+		},
+		"stdout": func(string) (writer, error) {
+			return newLineWriter(os.Stdout), nil
+		},
+		"stderr": func(string) (writer, error) {
+			return newLineWriter(os.Stderr), nil
+		},
+	}
 }

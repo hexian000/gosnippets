@@ -6,22 +6,20 @@ package slog
 import (
 	"log/syslog"
 	"strconv"
-	"sync"
 )
 
-type syslogOutput struct {
-	mu  sync.Mutex
+type syslogWriter struct {
 	buf []byte
 	out *syslog.Writer
 }
 
 func init() {
-	builtinOutput["syslog"] = func(tag string) (logOutput, error) {
+	builtinOutput["syslog"] = func(tag string) (writer, error) {
 		w, err := syslog.New(syslog.LOG_USER|syslog.LOG_NOTICE, tag)
 		if err != nil {
 			return nil, err
 		}
-		return &syslogOutput{
+		return &syslogWriter{
 			buf: make([]byte, 0),
 			out: w,
 		}, nil
@@ -40,9 +38,7 @@ var priorityMap = [...]func(*syslog.Writer, string) error{
 	(*syslog.Writer).Debug,
 }
 
-func (s *syslogOutput) Write(m logMessage) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+func (s *syslogWriter) Write(m message) {
 	buf := s.buf[:0]
 	buf = append(buf, levelChar[m.level], ' ')
 	buf = append(buf, m.file...)
