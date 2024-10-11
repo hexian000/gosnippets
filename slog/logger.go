@@ -5,7 +5,6 @@ import (
 	"io"
 	"net"
 	"net/url"
-	"os"
 	"runtime"
 	"strings"
 	"sync"
@@ -13,9 +12,10 @@ import (
 )
 
 type Logger struct {
-	mu    sync.RWMutex
-	out   writer
-	level Level
+	mu         sync.RWMutex
+	level      Level
+	out        writer
+	filePrefix string
 }
 
 func NewLogger(level Level) *Logger {
@@ -23,12 +23,6 @@ func NewLogger(level Level) *Logger {
 		out:   newDiscardWriter(),
 		level: level,
 	}
-}
-
-type writeOp struct {
-	out  writer
-	m    message
-	sync chan struct{}
 }
 
 func (l *Logger) SetOutputConfig(output, tag string) error {
@@ -60,13 +54,14 @@ func (l *Logger) Output(calldepth int, level Level, msg []byte) {
 		return
 	}
 	out := l.out
+	filePrefix := l.filePrefix
 	l.mu.RUnlock()
 
 	_, file, line, ok := runtime.Caller(calldepth)
 	if !ok {
 		file, line = "???", 0
-	} else if cwd, err := os.Getwd(); err == nil {
-		file = strings.TrimPrefix(file, cwd+"/")
+	} else if filePrefix != "" {
+		file = strings.TrimPrefix(file, filePrefix)
 	}
 
 	out.Write(message{
@@ -88,6 +83,12 @@ func (l *Logger) CheckLevel(level Level) bool {
 	l.mu.RLock()
 	defer l.mu.RUnlock()
 	return level <= l.level
+}
+
+func (l *Logger) SetFilePrefix(prefix string) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	l.filePrefix = prefix
 }
 
 func (l *Logger) SetOutput(w writer) {
