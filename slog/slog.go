@@ -22,7 +22,7 @@ var levelChar = [...]byte{
 	'-', 'F', 'E', 'W', 'I', 'I', 'D', 'V', 'V',
 }
 
-var std = NewLogger(LevelVerbose, 16)
+var std = NewLogger(LevelVerbose)
 
 func Default() *Logger {
 	return std
@@ -30,10 +30,6 @@ func Default() *Logger {
 
 func Output(calldepth int, level Level, msg []byte) {
 	std.Output(calldepth+1, level, msg)
-}
-
-func Close() {
-	std.Close()
 }
 
 func Checkf(cond bool, format string, v ...interface{}) {

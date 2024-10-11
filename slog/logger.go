@@ -15,37 +15,20 @@ import (
 type Logger struct {
 	mu    sync.RWMutex
 	out   writer
-	ch    chan *writeOp
-	wg    sync.WaitGroup
 	level Level
 }
 
-func NewLogger(level Level, bufSize int) *Logger {
-	l := &Logger{
+func NewLogger(level Level) *Logger {
+	return &Logger{
 		out:   newDiscardWriter(),
-		ch:    make(chan *writeOp, bufSize),
 		level: level,
 	}
-	l.wg.Add(1)
-	go l.run()
-	return l
-}
-
-func (l *Logger) Close() {
-	close(l.ch)
-	l.wg.Wait()
 }
 
 type writeOp struct {
-	out writer
-	m   message
-}
-
-func (l *Logger) run() {
-	defer l.wg.Done()
-	for op := range l.ch {
-		op.out.Write(op.m)
-	}
+	out  writer
+	m    message
+	sync chan struct{}
 }
 
 func (l *Logger) SetOutputConfig(output, tag string) error {
@@ -86,16 +69,13 @@ func (l *Logger) Output(calldepth int, level Level, msg []byte) {
 		file = strings.TrimPrefix(file, cwd+"/")
 	}
 
-	l.ch <- &writeOp{
-		out: out,
-		m: message{
-			timestamp: now,
-			level:     level,
-			file:      []byte(file),
-			line:      line,
-			msg:       msg,
-		},
-	}
+	out.Write(message{
+		timestamp: now,
+		level:     level,
+		file:      []byte(file),
+		line:      line,
+		msg:       msg,
+	})
 }
 
 func (l *Logger) SetLevel(level Level) {
