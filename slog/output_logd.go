@@ -12,7 +12,6 @@ import (
 
 type logdWriter struct {
 	tag []byte
-	buf []byte
 	out net.Conn
 }
 
@@ -24,7 +23,6 @@ func init() {
 		}
 		return &logdWriter{
 			tag: []byte(tag),
-			buf: make([]byte, 11), // android_log_header_t
 			out: conn,
 		}, nil
 	}
@@ -43,7 +41,7 @@ var levelMap = [...]byte{
 }
 
 func (l *logdWriter) Write(m message) {
-	buf := l.buf[:11]
+	buf := make([]byte, 11, lineBufSize)
 	buf[0] = 0 // LOG_ID_MAIN
 	le := binary.LittleEndian
 	le.PutUint16(buf[1:3], uint16(os.Getpid()))
@@ -62,6 +60,5 @@ func (l *logdWriter) Write(m message) {
 	buf = append(buf, ' ')
 	buf = append(buf, m.msg...)
 	buf = append(buf, 0)
-	l.buf = buf
 	_, _ = l.out.Write(buf)
 }

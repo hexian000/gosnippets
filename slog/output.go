@@ -19,6 +19,8 @@ type writer interface {
 	Write(m message)
 }
 
+const lineBufSize = 8192
+
 type discardWriter struct{}
 
 func newDiscardWriter() writer {
@@ -28,19 +30,17 @@ func newDiscardWriter() writer {
 func (w *discardWriter) Write(_ message) {}
 
 type lineWriter struct {
-	buf []byte
 	out io.Writer
 }
 
 func newLineWriter(out io.Writer) writer {
 	return &lineWriter{
-		buf: make([]byte, 0),
 		out: out,
 	}
 }
 
 func (w *lineWriter) Write(m message) {
-	buf := w.buf[:0]
+	buf := make([]byte, 0, lineBufSize)
 	buf = append(buf, levelChar[m.level], ' ')
 	buf = m.timestamp.AppendFormat(buf, time.RFC3339)
 	buf = append(buf, ' ')
@@ -50,7 +50,6 @@ func (w *lineWriter) Write(m message) {
 	buf = append(buf, ' ')
 	buf = append(buf, m.msg...)
 	buf = append(buf, '\n')
-	w.buf = buf
 	_, _ = w.out.Write(buf)
 }
 

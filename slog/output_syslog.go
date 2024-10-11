@@ -9,7 +9,6 @@ import (
 )
 
 type syslogWriter struct {
-	buf []byte
 	out *syslog.Writer
 }
 
@@ -19,10 +18,7 @@ func init() {
 		if err != nil {
 			return nil, err
 		}
-		return &syslogWriter{
-			buf: make([]byte, 0),
-			out: w,
-		}, nil
+		return &syslogWriter{w}, nil
 	}
 }
 
@@ -39,13 +35,12 @@ var priorityMap = [...]func(*syslog.Writer, string) error{
 }
 
 func (s *syslogWriter) Write(m message) {
-	buf := s.buf[:0]
+	buf := make([]byte, 0, lineBufSize)
 	buf = append(buf, levelChar[m.level], ' ')
 	buf = append(buf, m.file...)
 	buf = append(buf, ':')
 	buf = strconv.AppendInt(buf, int64(m.line), 10)
 	buf = append(buf, ' ')
 	buf = append(buf, m.msg...)
-	s.buf = buf
 	_ = priorityMap[m.level](s.out, string(buf))
 }
