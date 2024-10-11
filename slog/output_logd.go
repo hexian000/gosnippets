@@ -40,7 +40,7 @@ var levelMap = [...]byte{
 	LevelVeryVerbose: 2, /* ANDROID_LOG_VERBOSE */
 }
 
-func (l *logdWriter) Write(m message) {
+func (l *logdWriter) Write(m *message) {
 	buf := make([]byte, 11, lineBufSize)
 	buf[0] = 0 // LOG_ID_MAIN
 	le := binary.LittleEndian

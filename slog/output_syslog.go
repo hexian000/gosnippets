@@ -34,7 +34,7 @@ var priorityMap = [...]func(*syslog.Writer, string) error{
 	(*syslog.Writer).Debug,
 }
 
-func (s *syslogWriter) Write(m message) {
+func (s *syslogWriter) Write(m *message) {
 	buf := make([]byte, 0, lineBufSize)
 	buf = append(buf, levelChar[m.level], ' ')
 	buf = append(buf, m.file...)

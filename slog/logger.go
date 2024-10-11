@@ -64,7 +64,7 @@ func (l *Logger) Output(calldepth int, level Level, msg []byte) {
 		file = strings.TrimPrefix(file, filePrefix)
 	}
 
-	out.Write(message{
+	out.Write(&message{
 		timestamp: now,
 		level:     level,
 		file:      []byte(file),
