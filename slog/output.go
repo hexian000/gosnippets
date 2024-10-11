@@ -9,7 +9,7 @@ import (
 
 type message struct {
 	timestamp time.Time
-	level     int
+	level     Level
 	file      []byte
 	line      int
 	msg       []byte
