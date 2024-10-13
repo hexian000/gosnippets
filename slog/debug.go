@@ -57,7 +57,30 @@ func Textf(level Level, text string, format string, v ...interface{}) {
 }
 
 func Binaryf(level Level, bin []byte, format string, v ...interface{}) {
-	// TODO
+	buf := bytes.NewBufferString(fmt.Sprintf(format, v...))
+	wrap := 16
+	for i := 0; i < len(bin); i += wrap {
+		buf.WriteString(fmt.Sprintf("\n%s%p: ", indent, bin[i:]))
+		for j := 0; j < wrap; j++ {
+			if (i + j) < len(bin) {
+				buf.WriteString(fmt.Sprintf("%02X ", bin[i+j]))
+			} else {
+				buf.WriteString("   ")
+			}
+		}
+		buf.WriteRune(' ')
+		for j := 0; j < wrap; j++ {
+			ch := ' '
+			if (i + j) < len(bin) {
+				ch = rune(bin[i+j])
+				if ch > unicode.MaxASCII || !unicode.IsPrint(ch) {
+					ch = '.'
+				}
+			}
+			buf.WriteRune(ch)
+		}
+	}
+	std.Output(2, level, buf.Bytes())
 }
 
 func Stackf(level Level, format string, v ...interface{}) {
