@@ -33,12 +33,11 @@ const (
 	tabWidth = 4
 )
 
-func Textf(level Level, text string, format string, v ...interface{}) {
-	buf := bytes.NewBufferString(fmt.Sprintf(format, v...))
+func printText(buf *bytes.Buffer, txt string) {
 	line := 1
 	wrap := 0
 	var width int
-	for _, r := range text {
+	for _, r := range txt {
 		if wrap == 0 {
 			buf.WriteString(fmt.Sprintf("\n%s%4d ", indent, line))
 		}
@@ -71,11 +70,21 @@ func Textf(level Level, text string, format string, v ...interface{}) {
 		_, _ = buf.WriteRune(r)
 		wrap += width
 	}
+}
+
+func Textf(level Level, txt string, format string, v ...interface{}) {
+	buf := bytes.NewBufferString(fmt.Sprintf(format, v...))
+	printText(buf, txt)
 	std.Output(2, level, buf.Bytes())
 }
 
-func Binaryf(level Level, bin []byte, format string, v ...interface{}) {
-	buf := bytes.NewBufferString(fmt.Sprintf(format, v...))
+func Text(level Level, txt string, v ...interface{}) {
+	buf := bytes.NewBufferString(fmt.Sprint(v...))
+	printText(buf, txt)
+	std.Output(2, level, buf.Bytes())
+}
+
+func printBinary(buf *bytes.Buffer, bin []byte) {
 	wrap := 16
 	for i := 0; i < len(bin); i += wrap {
 		buf.WriteString(fmt.Sprintf("\n%s%p: ", indent, bin[i:]))
@@ -98,15 +107,42 @@ func Binaryf(level Level, bin []byte, format string, v ...interface{}) {
 			buf.WriteRune(ch)
 		}
 	}
+}
+
+func Binaryf(level Level, bin []byte, format string, v ...interface{}) {
+	buf := bytes.NewBufferString(fmt.Sprintf(format, v...))
+	printBinary(buf, bin)
+	std.Output(2, level, buf.Bytes())
+}
+
+func Binary(level Level, bin []byte, v ...interface{}) {
+	buf := bytes.NewBufferString(fmt.Sprint(v...))
+	printBinary(buf, bin)
 	std.Output(2, level, buf.Bytes())
 }
 
 func Stackf(level Level, format string, v ...interface{}) {
-	var buf [16384]byte
-	b := append(buf[:0], []byte(fmt.Sprintf(format, v...))...)
-	b = append(b, '\n')
-	n := runtime.Stack(buf[len(b):], false)
-	b = buf[:len(b)+n]
+	buf := bytes.NewBuffer(make([]byte, 0, 8192))
+	buf.WriteString(fmt.Sprintf(format, v...))
+	buf.WriteRune('\n')
+	b := buf.AvailableBuffer()
+	n := runtime.Stack(b, false)
+	_, _ = buf.Write(b[:n])
+	b = buf.Bytes()
+	if b[len(b)-1] == '\n' {
+		b = b[:len(b)-1]
+	}
+	std.Output(2, level, b)
+}
+
+func Stack(level Level, v ...interface{}) {
+	buf := bytes.NewBuffer(make([]byte, 0, 8192))
+	buf.WriteString(fmt.Sprint(v...))
+	buf.WriteRune('\n')
+	b := buf.AvailableBuffer()
+	n := runtime.Stack(b, false)
+	_, _ = buf.Write(b[:n])
+	b = buf.Bytes()
 	if b[len(b)-1] == '\n' {
 		b = b[:len(b)-1]
 	}
