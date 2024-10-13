@@ -9,6 +9,24 @@ import (
 	"github.com/mattn/go-runewidth"
 )
 
+func Checkf(cond bool, format string, v ...interface{}) {
+	if cond {
+		return
+	}
+	s := fmt.Sprintf(format, v...)
+	std.Output(2, LevelFatal, []byte(s))
+	panic(s)
+}
+
+func Check(cond bool, v ...interface{}) {
+	if cond {
+		return
+	}
+	s := fmt.Sprint(v...)
+	std.Output(2, LevelFatal, []byte(s))
+	panic(s)
+}
+
 const (
 	indent   = "  "
 	hardWrap = 70

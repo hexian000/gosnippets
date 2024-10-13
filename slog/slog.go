@@ -32,36 +32,6 @@ func Write(calldepth int, level Level, msg []byte) {
 	std.Output(calldepth+1, level, msg)
 }
 
-func Checkf(cond bool, format string, v ...interface{}) {
-	if cond {
-		return
-	}
-	s := fmt.Sprintf(format, v...)
-	std.Output(2, LevelFatal, []byte(s))
-	panic(s)
-}
-
-func Check(cond bool, v ...interface{}) {
-	if cond {
-		return
-	}
-	s := fmt.Sprint(v...)
-	std.Output(2, LevelFatal, []byte(s))
-	panic(s)
-}
-
-func Panicf(format string, v ...interface{}) {
-	s := fmt.Sprintf(format, v...)
-	std.Output(2, LevelFatal, []byte(s))
-	panic(s)
-}
-
-func Panic(v ...interface{}) {
-	s := fmt.Sprint(v...)
-	std.Output(2, LevelFatal, []byte(s))
-	panic(s)
-}
-
 // Serious problems that are likely to cause the program to exit.
 func Fatalf(format string, v ...interface{}) {
 	std.Output(2, LevelFatal, []byte(fmt.Sprintf(format, v...)))
