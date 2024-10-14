@@ -16,7 +16,7 @@ const (
 	LevelVeryVerbose
 )
 
-type Level int
+type Level int32
 
 var levelChar = [...]byte{
 	'-', 'F', 'E', 'W', 'I', 'I', 'D', 'V', 'V',

@@ -8,21 +8,23 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
 type Logger struct {
 	mu         sync.RWMutex
-	level      Level
+	level      atomic.Int32
 	out        writer
 	filePrefix string
 }
 
 func NewLogger(level Level) *Logger {
-	return &Logger{
-		out:   newDiscardWriter(),
-		level: level,
+	l := &Logger{
+		out: newDiscardWriter(),
 	}
+	l.level.Store(int32(level))
+	return l
 }
 
 func (l *Logger) SetOutputConfig(output, tag string) error {
@@ -71,15 +73,11 @@ func (l *Logger) Output(calldepth int, level Level, msg []byte) {
 }
 
 func (l *Logger) SetLevel(level Level) {
-	l.mu.Lock()
-	defer l.mu.Unlock()
-	l.level = level
+	l.level.Store(int32(level))
 }
 
 func (l *Logger) Level() Level {
-	l.mu.RLock()
-	defer l.mu.RUnlock()
-	return l.level
+	return Level(l.level.Load())
 }
 
 func (l *Logger) SetFilePrefix(prefix string) {
