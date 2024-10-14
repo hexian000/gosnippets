@@ -10,7 +10,7 @@ import (
 type message struct {
 	timestamp time.Time
 	level     Level
-	file      []byte
+	file      string
 	line      int
 	msg       []byte
 }
@@ -19,7 +19,7 @@ type writer interface {
 	Write(m *message)
 }
 
-const lineBufSize = 8192
+const bufSize = 4096
 
 type discardWriter struct{}
 
@@ -29,18 +29,18 @@ func newDiscardWriter() writer {
 
 func (w *discardWriter) Write(*message) {}
 
-type lineWriter struct {
+type textWriter struct {
 	out io.Writer
 }
 
-func newLineWriter(out io.Writer) writer {
-	return &lineWriter{
+func newTextWriter(out io.Writer) writer {
+	return &textWriter{
 		out: out,
 	}
 }
 
-func (w *lineWriter) Write(m *message) {
-	buf := make([]byte, 0, lineBufSize)
+func (w *textWriter) Write(m *message) {
+	buf := make([]byte, 0, bufSize)
 	buf = append(buf, levelChar[m.level], ' ')
 	buf = m.timestamp.AppendFormat(buf, time.RFC3339)
 	buf = append(buf, ' ')
@@ -48,9 +48,9 @@ func (w *lineWriter) Write(m *message) {
 	buf = append(buf, ':')
 	buf = strconv.AppendInt(buf, int64(m.line), 10)
 	buf = append(buf, ' ')
-	buf = append(buf, m.msg...)
-	buf = append(buf, '\n')
 	_, _ = w.out.Write(buf)
+	msg := append(m.msg, '\n')
+	_, _ = w.out.Write(msg)
 }
 
 var builtinOutput map[string]func(tag string) (writer, error)
@@ -61,10 +61,10 @@ func init() {
 			return newDiscardWriter(), nil
 		},
 		"stdout": func(string) (writer, error) {
-			return newLineWriter(os.Stdout), nil
+			return newTextWriter(os.Stdout), nil
 		},
 		"stderr": func(string) (writer, error) {
-			return newLineWriter(os.Stderr), nil
+			return newTextWriter(os.Stderr), nil
 		},
 	}
 }

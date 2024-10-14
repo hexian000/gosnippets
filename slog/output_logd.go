@@ -41,7 +41,7 @@ var levelMap = [...]byte{
 }
 
 func (l *logdWriter) Write(m *message) {
-	buf := make([]byte, 11, lineBufSize)
+	buf := make([]byte, 11, bufSize)
 	buf[0] = 0 // LOG_ID_MAIN
 	le := binary.LittleEndian
 	le.PutUint16(buf[1:3], uint16(os.Getpid()))
@@ -58,7 +58,7 @@ func (l *logdWriter) Write(m *message) {
 	buf = append(buf, ':')
 	buf = strconv.AppendInt(buf, int64(m.line), 10)
 	buf = append(buf, ' ')
-	buf = append(buf, m.msg...)
-	buf = append(buf, 0)
 	_, _ = l.out.Write(buf)
+	msg := append(m.msg, 0)
+	_, _ = l.out.Write(msg)
 }

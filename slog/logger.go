@@ -43,7 +43,7 @@ func (l *Logger) SetOutputConfig(output, tag string) error {
 	if err != nil {
 		return err
 	}
-	l.SetOutput(newLineWriter(conn))
+	l.SetOutput(newTextWriter(conn))
 	return nil
 }
 
@@ -67,7 +67,7 @@ func (l *Logger) Output(calldepth int, level Level, msg []byte) {
 	out.Write(&message{
 		timestamp: now,
 		level:     level,
-		file:      []byte(file),
+		file:      file,
 		line:      line,
 		msg:       msg,
 	})
@@ -98,7 +98,7 @@ func (l *Logger) SetOutput(w writer) {
 }
 
 func (l *Logger) SetLineOutput(w io.Writer) {
-	l.SetOutput(newLineWriter(w))
+	l.SetOutput(newTextWriter(w))
 }
 
 func (l *Logger) Fatalf(format string, v ...interface{}) {
