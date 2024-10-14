@@ -50,7 +50,7 @@ func printText(buf *bytes.Buffer, txt string) {
 		case '\t':
 			width = tabWidth - wrap%tabWidth
 		default:
-			if !(unicode.IsPrint(r) || unicode.IsSpace(r)) {
+			if !unicode.IsPrint(r) {
 				r = '?'
 			}
 			width = runewidth.RuneWidth(r)
