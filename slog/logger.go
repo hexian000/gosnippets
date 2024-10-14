@@ -17,12 +17,10 @@ type Logger struct {
 	filePrefix string
 }
 
-func NewLogger(level Level) *Logger {
-	l := &Logger{
+func NewLogger() *Logger {
+	return &Logger{
 		out: newDiscardWriter(),
 	}
-	l.level.Store(int32(level))
-	return l
 }
 
 type OutputType int
@@ -42,6 +40,10 @@ func (l *Logger) SetOutput(t OutputType, v ...interface{}) {
 	case OutputWriter:
 		l.out = newTextWriter(v[0].(io.Writer))
 	case OutputSyslog:
+		if newSyslogWriter == nil {
+			l.out = newDiscardWriter()
+			return
+		}
 		l.out = newSyslogWriter(v[0].(string))
 	}
 }

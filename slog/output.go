@@ -6,9 +6,7 @@ import (
 	"time"
 )
 
-var newSyslogWriter = func(string) writer {
-	return newDiscardWriter()
-}
+var newSyslogWriter func(string) writer
 
 type message struct {
 	timestamp time.Time

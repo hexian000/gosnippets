@@ -22,7 +22,7 @@ var levelChar = [...]byte{
 	'-', 'F', 'E', 'W', 'I', 'I', 'D', 'V', 'V',
 }
 
-var std = NewLogger(LevelVerbose)
+var std = NewLogger()
 
 func Default() *Logger {
 	return std
