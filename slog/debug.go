@@ -73,12 +73,18 @@ func printText(buf *bytes.Buffer, txt string) {
 }
 
 func Textf(level Level, txt string, format string, v ...interface{}) {
+	if !CheckLevel(level) {
+		return
+	}
 	buf := bytes.NewBufferString(fmt.Sprintf(format, v...))
 	printText(buf, txt)
 	std.Output(2, level, buf.Bytes())
 }
 
 func Text(level Level, txt string, v ...interface{}) {
+	if !CheckLevel(level) {
+		return
+	}
 	buf := bytes.NewBufferString(fmt.Sprint(v...))
 	printText(buf, txt)
 	std.Output(2, level, buf.Bytes())
@@ -110,18 +116,27 @@ func printBinary(buf *bytes.Buffer, bin []byte) {
 }
 
 func Binaryf(level Level, bin []byte, format string, v ...interface{}) {
+	if !CheckLevel(level) {
+		return
+	}
 	buf := bytes.NewBufferString(fmt.Sprintf(format, v...))
 	printBinary(buf, bin)
 	std.Output(2, level, buf.Bytes())
 }
 
 func Binary(level Level, bin []byte, v ...interface{}) {
+	if !CheckLevel(level) {
+		return
+	}
 	buf := bytes.NewBufferString(fmt.Sprint(v...))
 	printBinary(buf, bin)
 	std.Output(2, level, buf.Bytes())
 }
 
 func Stackf(level Level, format string, v ...interface{}) {
+	if !CheckLevel(level) {
+		return
+	}
 	buf := bytes.NewBuffer(make([]byte, 0, 8192))
 	buf.WriteString(fmt.Sprintf(format, v...))
 	buf.WriteRune('\n')
@@ -136,6 +151,9 @@ func Stackf(level Level, format string, v ...interface{}) {
 }
 
 func Stack(level Level, v ...interface{}) {
+	if !CheckLevel(level) {
+		return
+	}
 	buf := bytes.NewBuffer(make([]byte, 0, 8192))
 	buf.WriteString(fmt.Sprint(v...))
 	buf.WriteRune('\n')
