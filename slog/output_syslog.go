@@ -13,7 +13,7 @@ type syslogWriter struct {
 }
 
 func init() {
-	newSyslogWriter = func(tag string) writer {
+	newSyslogWriter = func(tag string) output {
 		w, err := syslog.New(syslog.LOG_USER|syslog.LOG_NOTICE, tag)
 		if err != nil {
 			panic(err)
@@ -34,13 +34,13 @@ var priorityMap = [...]func(*syslog.Writer, string) error{
 	(*syslog.Writer).Debug,
 }
 
-func (s *syslogWriter) Write(m *message) {
+func (s *syslogWriter) Write(m *message) error {
 	buf := make([]byte, 0, bufSize)
 	buf = append(buf, levelChar[m.level], ' ')
 	buf = append(buf, m.file...)
 	buf = append(buf, ':')
 	buf = strconv.AppendInt(buf, int64(m.line), 10)
 	buf = append(buf, ' ')
-	buf = append(buf, m.msg...)
-	_ = priorityMap[m.level](s.out, string(buf))
+	buf = m.appendOutput(buf)
+	return priorityMap[m.level](s.out, string(buf))
 }

@@ -6,41 +6,43 @@ import (
 	"time"
 )
 
-var newSyslogWriter func(string) writer
+var newSyslogWriter func(string) output
 
 type message struct {
-	timestamp time.Time
-	level     Level
-	file      string
-	line      int
-	msg       []byte
+	timestamp    time.Time
+	level        Level
+	file         string
+	line         int
+	appendOutput func([]byte) []byte
 }
 
-type writer interface {
-	Write(m *message)
+type output interface {
+	Write(m *message) error
 }
 
 const bufSize = 4096
 
 type discardWriter struct{}
 
-func newDiscardWriter() writer {
+func newDiscardWriter() output {
 	return &discardWriter{}
 }
 
-func (w *discardWriter) Write(*message) {}
+func (w *discardWriter) Write(*message) error {
+	return nil
+}
 
 type textWriter struct {
 	out io.Writer
 }
 
-func newTextWriter(out io.Writer) writer {
+func newTextWriter(out io.Writer) output {
 	return &textWriter{
 		out: out,
 	}
 }
 
-func (w *textWriter) Write(m *message) {
+func (w *textWriter) Write(m *message) error {
 	buf := make([]byte, 0, bufSize)
 	buf = append(buf, levelChar[m.level], ' ')
 	buf = m.timestamp.AppendFormat(buf, time.RFC3339)
@@ -49,7 +51,8 @@ func (w *textWriter) Write(m *message) {
 	buf = append(buf, ':')
 	buf = strconv.AppendInt(buf, int64(m.line), 10)
 	buf = append(buf, ' ')
-	_, _ = w.out.Write(buf)
-	msg := append(m.msg, '\n')
-	_, _ = w.out.Write(msg)
+	buf = m.appendOutput(buf)
+	buf = append(buf, '\n')
+	_, err := w.out.Write(buf)
+	return err
 }

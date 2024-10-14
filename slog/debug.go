@@ -1,7 +1,6 @@
 package slog
 
 import (
-	"bytes"
 	"fmt"
 	"runtime"
 	"unicode"
@@ -14,7 +13,7 @@ func Checkf(cond bool, format string, v ...interface{}) {
 		return
 	}
 	s := fmt.Sprintf(format, v...)
-	std.Output(2, LevelFatal, []byte(s))
+	std.Output(2, LevelFatal, s)
 	panic(s)
 }
 
@@ -23,7 +22,7 @@ func Check(cond bool, v ...interface{}) {
 		return
 	}
 	s := fmt.Sprint(v...)
-	std.Output(2, LevelFatal, []byte(s))
+	std.Output(2, LevelFatal, s)
 	panic(s)
 }
 
@@ -33,13 +32,13 @@ const (
 	tabWidth = 4
 )
 
-func printText(buf *bytes.Buffer, txt string) {
+func appendText(b []byte, txt string) []byte {
 	line := 1
 	wrap := 0
 	var width int
 	for _, r := range txt {
 		if wrap == 0 {
-			buf.WriteString(fmt.Sprintf("\n%s%4d ", indent, line))
+			b = fmt.Appendf(b, "\n%s%4d ", indent, line)
 		}
 		switch r {
 		case '\n':
@@ -57,112 +56,118 @@ func printText(buf *bytes.Buffer, txt string) {
 		}
 		if wrap+width > hardWrap {
 			/* hard wrap */
-			buf.WriteString(fmt.Sprintf(" +\n%s     ", indent))
+			b = fmt.Appendf(b, " +\n%s     ", indent)
 			wrap = 0
 		}
 		if r == '\t' {
 			for i := 0; i < width; i++ {
-				buf.WriteRune(' ')
+				b = append(b, ' ')
 			}
 			wrap += width
 			continue
 		}
-		_, _ = buf.WriteRune(r)
+		b = append(b, string(r)...)
 		wrap += width
 	}
+	return b
 }
 
 func Textf(level Level, txt string, format string, v ...interface{}) {
 	if !CheckLevel(level) {
 		return
 	}
-	buf := bytes.NewBufferString(fmt.Sprintf(format, v...))
-	printText(buf, txt)
-	std.Output(2, level, buf.Bytes())
+	std.output(2, level, func(b []byte) []byte {
+		b = fmt.Appendf(b, format, v...)
+		return appendText(b, txt)
+	})
 }
 
 func Text(level Level, txt string, v ...interface{}) {
 	if !CheckLevel(level) {
 		return
 	}
-	buf := bytes.NewBufferString(fmt.Sprint(v...))
-	printText(buf, txt)
-	std.Output(2, level, buf.Bytes())
+	std.output(2, level, func(b []byte) []byte {
+		b = fmt.Append(b, v...)
+		return appendText(b, txt)
+	})
 }
 
-func printBinary(buf *bytes.Buffer, bin []byte) {
+func appendBinary(b []byte, bin []byte) []byte {
 	wrap := 16
 	for i := 0; i < len(bin); i += wrap {
-		buf.WriteString(fmt.Sprintf("\n%s%p: ", indent, bin[i:]))
+		b = fmt.Appendf(b, "\n%s%p: ", indent, bin[i:])
 		for j := 0; j < wrap; j++ {
 			if (i + j) < len(bin) {
-				buf.WriteString(fmt.Sprintf("%02X ", bin[i+j]))
+				b = fmt.Appendf(b, "%02X ", bin[i+j])
 			} else {
-				buf.WriteString("   ")
+				b = append(b, "   "...)
 			}
 		}
-		buf.WriteRune(' ')
+		b = append(b, ' ')
 		for j := 0; j < wrap; j++ {
-			ch := ' '
+			r := ' '
 			if (i + j) < len(bin) {
-				ch = rune(bin[i+j])
-				if ch > unicode.MaxASCII || !unicode.IsPrint(ch) {
-					ch = '.'
+				r = rune(bin[i+j])
+				if r > unicode.MaxASCII || !unicode.IsPrint(r) {
+					r = '.'
 				}
 			}
-			buf.WriteRune(ch)
+			b = append(b, string(r)...)
 		}
 	}
+	return b
 }
 
 func Binaryf(level Level, bin []byte, format string, v ...interface{}) {
 	if !CheckLevel(level) {
 		return
 	}
-	buf := bytes.NewBufferString(fmt.Sprintf(format, v...))
-	printBinary(buf, bin)
-	std.Output(2, level, buf.Bytes())
+	std.output(2, level, func(b []byte) []byte {
+		b = fmt.Appendf(b, format, v...)
+		return appendBinary(b, bin)
+	})
 }
 
 func Binary(level Level, bin []byte, v ...interface{}) {
 	if !CheckLevel(level) {
 		return
 	}
-	buf := bytes.NewBufferString(fmt.Sprint(v...))
-	printBinary(buf, bin)
-	std.Output(2, level, buf.Bytes())
+	std.output(2, level, func(b []byte) []byte {
+		b = fmt.Append(b, v...)
+		return appendBinary(b, bin)
+	})
 }
+
+const stackBufSize = 4096
 
 func Stackf(level Level, format string, v ...interface{}) {
 	if !CheckLevel(level) {
 		return
 	}
-	buf := bytes.NewBuffer(make([]byte, 0, 8192))
-	buf.WriteString(fmt.Sprintf(format, v...))
-	buf.WriteRune('\n')
-	b := buf.AvailableBuffer()
-	n := runtime.Stack(b, false)
-	_, _ = buf.Write(b[:n])
-	b = buf.Bytes()
-	if b[len(b)-1] == '\n' {
-		b = b[:len(b)-1]
+	var stack [stackBufSize]byte
+	n := runtime.Stack(stack[:], false)
+	if stack[n-1] == '\n' {
+		n--
 	}
-	std.Output(2, level, b)
+	std.output(2, level, func(b []byte) []byte {
+		b = fmt.Appendf(b, format, v...)
+		b = append(b, '\n')
+		return append(b, stack[:n]...)
+	})
 }
 
 func Stack(level Level, v ...interface{}) {
 	if !CheckLevel(level) {
 		return
 	}
-	buf := bytes.NewBuffer(make([]byte, 0, 8192))
-	buf.WriteString(fmt.Sprint(v...))
-	buf.WriteRune('\n')
-	b := buf.AvailableBuffer()
-	n := runtime.Stack(b, false)
-	_, _ = buf.Write(b[:n])
-	b = buf.Bytes()
-	if b[len(b)-1] == '\n' {
-		b = b[:len(b)-1]
+	var stack [stackBufSize]byte
+	n := runtime.Stack(stack[:], false)
+	if stack[n-1] == '\n' {
+		n--
 	}
-	std.Output(2, level, b)
+	std.output(2, level, func(b []byte) []byte {
+		b = fmt.Append(b, v...)
+		b = append(b, '\n')
+		return append(b, stack[:n]...)
+	})
 }

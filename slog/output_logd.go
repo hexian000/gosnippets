@@ -16,7 +16,7 @@ type logdWriter struct {
 }
 
 func init() {
-	newSyslogWriter = func(tag string) writer {
+	newSyslogWriter = func(tag string) output {
 		conn, err := net.Dial("unixgram", "/dev/socket/logdw")
 		if err != nil {
 			panic(err)
@@ -40,7 +40,7 @@ var levelMap = [...]byte{
 	LevelVeryVerbose: 2, /* ANDROID_LOG_VERBOSE */
 }
 
-func (l *logdWriter) Write(m *message) {
+func (l *logdWriter) Write(m *message) error {
 	buf := make([]byte, 11, bufSize)
 	buf[0] = 0 // LOG_ID_MAIN
 	le := binary.LittleEndian
@@ -58,7 +58,8 @@ func (l *logdWriter) Write(m *message) {
 	buf = append(buf, ':')
 	buf = strconv.AppendInt(buf, int64(m.line), 10)
 	buf = append(buf, ' ')
-	_, _ = l.out.Write(buf)
-	msg := append(m.msg, 0)
-	_, _ = l.out.Write(msg)
+	buf = m.appendOutput(buf)
+	buf = append(buf, 0)
+	_, err := l.out.Write(buf)
+	return err
 }

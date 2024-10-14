@@ -28,8 +28,8 @@ func Default() *Logger {
 	return std
 }
 
-func Write(calldepth int, level Level, msg []byte) {
-	std.Output(calldepth+1, level, msg)
+func Output(calldepth int, level Level, s string) {
+	std.Output(calldepth+1, level, s)
 }
 
 func CheckLevel(level Level) bool {
@@ -41,7 +41,9 @@ func Fatalf(format string, v ...interface{}) {
 	if !CheckLevel(LevelFatal) {
 		return
 	}
-	std.Output(2, LevelFatal, []byte(fmt.Sprintf(format, v...)))
+	std.output(2, LevelFatal, func(b []byte) []byte {
+		return fmt.Appendf(b, format, v...)
+	})
 }
 
 // Serious problems that are likely to cause the program to exit.
@@ -49,7 +51,9 @@ func Fatal(v ...interface{}) {
 	if !CheckLevel(LevelFatal) {
 		return
 	}
-	std.Output(2, LevelFatal, []byte(fmt.Sprint(v...)))
+	std.output(2, LevelFatal, func(b []byte) []byte {
+		return fmt.Append(b, v...)
+	})
 }
 
 // Issues that shouldn't be ignored.
@@ -57,7 +61,9 @@ func Errorf(format string, v ...interface{}) {
 	if !CheckLevel(LevelError) {
 		return
 	}
-	std.Output(2, LevelError, []byte(fmt.Sprintf(format, v...)))
+	std.output(2, LevelError, func(b []byte) []byte {
+		return fmt.Appendf(b, format, v...)
+	})
 }
 
 // Issues that shouldn't be ignored.
@@ -65,7 +71,9 @@ func Error(v ...interface{}) {
 	if !CheckLevel(LevelError) {
 		return
 	}
-	std.Output(2, LevelError, []byte(fmt.Sprint(v...)))
+	std.output(2, LevelError, func(b []byte) []byte {
+		return fmt.Append(b, v...)
+	})
 }
 
 // Issues that may be ignored.
@@ -73,7 +81,9 @@ func Warningf(format string, v ...interface{}) {
 	if !CheckLevel(LevelWarning) {
 		return
 	}
-	std.Output(2, LevelWarning, []byte(fmt.Sprintf(format, v...)))
+	std.output(2, LevelWarning, func(b []byte) []byte {
+		return fmt.Appendf(b, format, v...)
+	})
 }
 
 // Issues that may be ignored.
@@ -81,7 +91,9 @@ func Warning(v ...interface{}) {
 	if !CheckLevel(LevelWarning) {
 		return
 	}
-	std.Output(2, LevelWarning, []byte(fmt.Sprint(v...)))
+	std.output(2, LevelWarning, func(b []byte) []byte {
+		return fmt.Append(b, v...)
+	})
 }
 
 // Important status changes. The prefix is 'I'.
@@ -89,7 +101,9 @@ func Noticef(format string, v ...interface{}) {
 	if !CheckLevel(LevelNotice) {
 		return
 	}
-	std.Output(2, LevelNotice, []byte(fmt.Sprintf(format, v...)))
+	std.output(2, LevelNotice, func(b []byte) []byte {
+		return fmt.Appendf(b, format, v...)
+	})
 }
 
 // Important status changes. The prefix is 'I'.
@@ -97,7 +111,9 @@ func Notice(v ...interface{}) {
 	if !CheckLevel(LevelNotice) {
 		return
 	}
-	std.Output(2, LevelNotice, []byte(fmt.Sprint(v...)))
+	std.output(2, LevelNotice, func(b []byte) []byte {
+		return fmt.Append(b, v...)
+	})
 }
 
 // Normal work reports.
@@ -105,7 +121,9 @@ func Infof(format string, v ...interface{}) {
 	if !CheckLevel(LevelInfo) {
 		return
 	}
-	std.Output(2, LevelInfo, []byte(fmt.Sprintf(format, v...)))
+	std.output(2, LevelInfo, func(b []byte) []byte {
+		return fmt.Appendf(b, format, v...)
+	})
 }
 
 // Normal work reports.
@@ -113,7 +131,9 @@ func Info(v ...interface{}) {
 	if !CheckLevel(LevelInfo) {
 		return
 	}
-	std.Output(2, LevelInfo, []byte(fmt.Sprint(v...)))
+	std.output(2, LevelInfo, func(b []byte) []byte {
+		return fmt.Append(b, v...)
+	})
 }
 
 // Extra information for debugging.
@@ -121,7 +141,9 @@ func Debugf(format string, v ...interface{}) {
 	if !CheckLevel(LevelDebug) {
 		return
 	}
-	std.Output(2, LevelDebug, []byte(fmt.Sprintf(format, v...)))
+	std.output(2, LevelDebug, func(b []byte) []byte {
+		return fmt.Appendf(b, format, v...)
+	})
 }
 
 // Extra information for debugging.
@@ -129,7 +151,9 @@ func Debug(v ...interface{}) {
 	if !CheckLevel(LevelDebug) {
 		return
 	}
-	std.Output(2, LevelDebug, []byte(fmt.Sprint(v...)))
+	std.output(2, LevelDebug, func(b []byte) []byte {
+		return fmt.Append(b, v...)
+	})
 }
 
 // Details for inspecting specific issues.
@@ -137,7 +161,9 @@ func Verbosef(format string, v ...interface{}) {
 	if !CheckLevel(LevelVerbose) {
 		return
 	}
-	std.Output(2, LevelVerbose, []byte(fmt.Sprintf(format, v...)))
+	std.output(2, LevelVerbose, func(b []byte) []byte {
+		return fmt.Appendf(b, format, v...)
+	})
 }
 
 // Details for inspecting specific issues.
@@ -145,7 +171,9 @@ func Verbose(v ...interface{}) {
 	if !CheckLevel(LevelVerbose) {
 		return
 	}
-	std.Output(2, LevelVerbose, []byte(fmt.Sprint(v...)))
+	std.output(2, LevelVerbose, func(b []byte) []byte {
+		return fmt.Append(b, v...)
+	})
 }
 
 // More details that may significantly impact performance. The prefix is 'V'.
@@ -153,7 +181,9 @@ func VeryVerbosef(format string, v ...interface{}) {
 	if !CheckLevel(LevelVeryVerbose) {
 		return
 	}
-	std.Output(2, LevelVeryVerbose, []byte(fmt.Sprintf(format, v...)))
+	std.output(2, LevelVeryVerbose, func(b []byte) []byte {
+		return fmt.Appendf(b, format, v...)
+	})
 }
 
 // More details that may significantly impact performance. The prefix is 'V'.
@@ -161,5 +191,7 @@ func VeryVerbose(v ...interface{}) {
 	if !CheckLevel(LevelVeryVerbose) {
 		return
 	}
-	std.Output(2, LevelVeryVerbose, []byte(fmt.Sprint(v...)))
+	std.output(2, LevelVeryVerbose, func(b []byte) []byte {
+		return fmt.Append(b, v...)
+	})
 }

@@ -11,10 +11,10 @@ import (
 )
 
 type Logger struct {
-	mu         sync.RWMutex
+	out        output
+	outMu      sync.Mutex
 	level      atomic.Int32
-	out        writer
-	filePrefix string
+	filePrefix atomic.Pointer[string]
 }
 
 func NewLogger() *Logger {
@@ -32,42 +32,47 @@ const (
 )
 
 func (l *Logger) SetOutput(t OutputType, v ...interface{}) {
-	l.mu.Lock()
-	defer l.mu.Unlock()
+	var w output
 	switch t {
 	case OutputDiscard:
-		l.out = newDiscardWriter()
+		w = newDiscardWriter()
 	case OutputWriter:
-		l.out = newTextWriter(v[0].(io.Writer))
+		w = newTextWriter(v[0].(io.Writer))
 	case OutputSyslog:
 		if newSyslogWriter == nil {
-			l.out = newDiscardWriter()
-			return
+			w = newDiscardWriter()
+		} else {
+			w = newSyslogWriter(v[0].(string))
 		}
-		l.out = newSyslogWriter(v[0].(string))
 	}
+	l.outMu.Lock()
+	defer l.outMu.Unlock()
+	l.out = w
 }
 
-func (l *Logger) Output(calldepth int, level Level, msg []byte) {
+func (l *Logger) output(calldepth int, level Level, appendOutput func([]byte) []byte) error {
 	now := time.Now()
-	l.mu.RLock()
-	out := l.out
-	filePrefix := l.filePrefix
-	l.mu.RUnlock()
-
 	_, file, line, ok := runtime.Caller(calldepth)
 	if ok {
-		file = strings.TrimPrefix(file, filePrefix)
+		file = strings.TrimPrefix(file, *l.filePrefix.Load())
 	} else {
 		file, line = "???", 0
 	}
 
-	out.Write(&message{
-		timestamp: now,
-		level:     level,
-		file:      file,
-		line:      line,
-		msg:       msg,
+	l.outMu.Lock()
+	defer l.outMu.Unlock()
+	return l.out.Write(&message{
+		timestamp:    now,
+		level:        level,
+		file:         file,
+		line:         line,
+		appendOutput: appendOutput,
+	})
+}
+
+func (l *Logger) Output(calldepth int, level Level, s string) error {
+	return l.output(calldepth+1, level, func(b []byte) []byte {
+		return append(b, s...)
 	})
 }
 
@@ -80,119 +85,149 @@ func (l *Logger) Level() Level {
 }
 
 func (l *Logger) SetFilePrefix(prefix string) {
-	l.mu.Lock()
-	defer l.mu.Unlock()
-	l.filePrefix = prefix
+	l.filePrefix.Store(&prefix)
 }
 
 func (l *Logger) Fatalf(format string, v ...interface{}) {
 	if LevelFatal > l.Level() {
 		return
 	}
-	l.Output(2, LevelFatal, []byte(fmt.Sprintf(format, v...)))
+	l.output(2, LevelFatal, func(b []byte) []byte {
+		return fmt.Appendf(b, format, v...)
+	})
 }
 
 func (l *Logger) Fatal(v ...interface{}) {
 	if LevelFatal > l.Level() {
 		return
 	}
-	l.Output(2, LevelFatal, []byte(fmt.Sprint(v...)))
+	l.output(2, LevelFatal, func(b []byte) []byte {
+		return fmt.Append(b, v...)
+	})
 }
 
 func (l *Logger) Errorf(format string, v ...interface{}) {
 	if LevelError > l.Level() {
 		return
 	}
-	l.Output(2, LevelError, []byte(fmt.Sprintf(format, v...)))
+	l.output(2, LevelError, func(b []byte) []byte {
+		return fmt.Appendf(b, format, v...)
+	})
 }
 
 func (l *Logger) Error(v ...interface{}) {
 	if LevelError > l.Level() {
 		return
 	}
-	l.Output(2, LevelError, []byte(fmt.Sprint(v...)))
+	l.output(2, LevelError, func(b []byte) []byte {
+		return fmt.Append(b, v...)
+	})
 }
 
 func (l *Logger) Warningf(format string, v ...interface{}) {
 	if LevelWarning > l.Level() {
 		return
 	}
-	l.Output(2, LevelWarning, []byte(fmt.Sprintf(format, v...)))
+	l.output(2, LevelWarning, func(b []byte) []byte {
+		return fmt.Appendf(b, format, v...)
+	})
 }
 
 func (l *Logger) Warning(v ...interface{}) {
 	if LevelWarning > l.Level() {
 		return
 	}
-	l.Output(2, LevelWarning, []byte(fmt.Sprint(v...)))
+	l.output(2, LevelWarning, func(b []byte) []byte {
+		return fmt.Append(b, v...)
+	})
 }
 
 func (l *Logger) Noticef(format string, v ...interface{}) {
 	if LevelNotice > l.Level() {
 		return
 	}
-	l.Output(2, LevelNotice, []byte(fmt.Sprintf(format, v...)))
+	l.output(2, LevelNotice, func(b []byte) []byte {
+		return fmt.Appendf(b, format, v...)
+	})
 }
 
 func (l *Logger) Notice(v ...interface{}) {
 	if LevelNotice > l.Level() {
 		return
 	}
-	l.Output(2, LevelNotice, []byte(fmt.Sprint(v...)))
+	l.output(2, LevelNotice, func(b []byte) []byte {
+		return fmt.Append(b, v...)
+	})
 }
 
 func (l *Logger) Infof(format string, v ...interface{}) {
 	if LevelInfo > l.Level() {
 		return
 	}
-	l.Output(2, LevelInfo, []byte(fmt.Sprintf(format, v...)))
+	l.output(2, LevelInfo, func(b []byte) []byte {
+		return fmt.Appendf(b, format, v...)
+	})
 }
 
 func (l *Logger) Info(v ...interface{}) {
 	if LevelInfo > l.Level() {
 		return
 	}
-	l.Output(2, LevelInfo, []byte(fmt.Sprint(v...)))
+	l.output(2, LevelInfo, func(b []byte) []byte {
+		return fmt.Append(b, v...)
+	})
 }
 
 func (l *Logger) Debugf(format string, v ...interface{}) {
 	if LevelDebug > l.Level() {
 		return
 	}
-	l.Output(2, LevelDebug, []byte(fmt.Sprintf(format, v...)))
+	l.output(2, LevelDebug, func(b []byte) []byte {
+		return fmt.Appendf(b, format, v...)
+	})
 }
 
 func (l *Logger) Debug(v ...interface{}) {
 	if LevelDebug > l.Level() {
 		return
 	}
-	l.Output(2, LevelDebug, []byte(fmt.Sprint(v...)))
+	l.output(2, LevelDebug, func(b []byte) []byte {
+		return fmt.Append(b, v...)
+	})
 }
 
 func (l *Logger) Verbosef(format string, v ...interface{}) {
 	if LevelVerbose > l.Level() {
 		return
 	}
-	l.Output(2, LevelVerbose, []byte(fmt.Sprintf(format, v...)))
+	l.output(2, LevelVerbose, func(b []byte) []byte {
+		return fmt.Appendf(b, format, v...)
+	})
 }
 
 func (l *Logger) Verbose(v ...interface{}) {
 	if LevelVerbose > l.Level() {
 		return
 	}
-	l.Output(2, LevelVerbose, []byte(fmt.Sprint(v...)))
+	l.output(2, LevelVerbose, func(b []byte) []byte {
+		return fmt.Append(b, v...)
+	})
 }
 
 func (l *Logger) VeryVerbosef(format string, v ...interface{}) {
 	if LevelVeryVerbose > l.Level() {
 		return
 	}
-	l.Output(2, LevelVeryVerbose, []byte(fmt.Sprintf(format, v...)))
+	l.output(2, LevelVeryVerbose, func(b []byte) []byte {
+		return fmt.Appendf(b, format, v...)
+	})
 }
 
 func (l *Logger) VeryVerbose(v ...interface{}) {
 	if LevelVeryVerbose > l.Level() {
 		return
 	}
-	l.Output(2, LevelVeryVerbose, []byte(fmt.Sprint(v...)))
+	l.output(2, LevelVeryVerbose, func(b []byte) []byte {
+		return fmt.Append(b, v...)
+	})
 }
