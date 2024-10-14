@@ -32,6 +32,10 @@ func Write(calldepth int, level Level, msg []byte) {
 	std.Output(calldepth+1, level, msg)
 }
 
+func (l *Logger) CheckLevel(level Level) bool {
+	return level <= std.Level()
+}
+
 // Serious problems that are likely to cause the program to exit.
 func Fatalf(format string, v ...interface{}) {
 	std.Output(2, LevelFatal, []byte(fmt.Sprintf(format, v...)))

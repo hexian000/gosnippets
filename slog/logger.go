@@ -79,10 +79,10 @@ func (l *Logger) SetLevel(level Level) {
 	l.level = level
 }
 
-func (l *Logger) CheckLevel(level Level) bool {
+func (l *Logger) Level() Level {
 	l.mu.RLock()
 	defer l.mu.RUnlock()
-	return level <= l.level
+	return l.level
 }
 
 func (l *Logger) SetFilePrefix(prefix string) {
