@@ -2,10 +2,13 @@ package slog
 
 import (
 	"io"
-	"os"
 	"strconv"
 	"time"
 )
+
+var newSyslogWriter = func(string) writer {
+	return newDiscardWriter()
+}
 
 type message struct {
 	timestamp time.Time
@@ -51,20 +54,4 @@ func (w *textWriter) Write(m *message) {
 	_, _ = w.out.Write(buf)
 	msg := append(m.msg, '\n')
 	_, _ = w.out.Write(msg)
-}
-
-var builtinOutput map[string]func(tag string) (writer, error)
-
-func init() {
-	builtinOutput = map[string]func(tag string) (writer, error){
-		"discard": func(string) (writer, error) {
-			return newDiscardWriter(), nil
-		},
-		"stdout": func(string) (writer, error) {
-			return newTextWriter(os.Stdout), nil
-		},
-		"stderr": func(string) (writer, error) {
-			return newTextWriter(os.Stderr), nil
-		},
-	}
 }

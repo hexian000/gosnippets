@@ -13,12 +13,12 @@ type syslogWriter struct {
 }
 
 func init() {
-	builtinOutput["syslog"] = func(tag string) (writer, error) {
+	newSyslogWriter = func(tag string) writer {
 		w, err := syslog.New(syslog.LOG_USER|syslog.LOG_NOTICE, tag)
 		if err != nil {
-			return nil, err
+			panic(err)
 		}
-		return &syslogWriter{w}, nil
+		return &syslogWriter{w}
 	}
 }
 

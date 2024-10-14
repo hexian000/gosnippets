@@ -4,6 +4,8 @@ import (
 	"fmt"
 )
 
+type Level int32
+
 const (
 	LevelSilence Level = iota
 	LevelFatal
@@ -15,8 +17,6 @@ const (
 	LevelVerbose
 	LevelVeryVerbose
 )
-
-type Level int32
 
 var levelChar = [...]byte{
 	'-', 'F', 'E', 'W', 'I', 'I', 'D', 'V', 'V',

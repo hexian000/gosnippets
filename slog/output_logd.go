@@ -16,15 +16,15 @@ type logdWriter struct {
 }
 
 func init() {
-	builtinOutput["syslog"] = func(tag string) (writer, error) {
+	newSyslogWriter = func(tag string) writer {
 		conn, err := net.Dial("unixgram", "/dev/socket/logdw")
 		if err != nil {
-			return nil, err
+			panic(err)
 		}
 		return &logdWriter{
 			tag: []byte(tag),
 			out: conn,
-		}, nil
+		}
 	}
 }
 

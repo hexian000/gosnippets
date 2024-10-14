@@ -3,8 +3,6 @@ package slog
 import (
 	"fmt"
 	"io"
-	"net"
-	"net/url"
 	"runtime"
 	"strings"
 	"sync"
@@ -27,26 +25,25 @@ func NewLogger(level Level) *Logger {
 	return l
 }
 
-func (l *Logger) SetOutputConfig(output, tag string) error {
-	if newOutput, ok := builtinOutput[output]; ok {
-		o, err := newOutput(tag)
-		if err != nil {
-			return err
-		}
-		l.SetOutput(o)
-		return nil
+type OutputType int
+
+const (
+	OutputDiscard OutputType = iota
+	OutputWriter
+	OutputSyslog
+)
+
+func (l *Logger) SetOutput(t OutputType, v ...interface{}) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	switch t {
+	case OutputDiscard:
+		l.out = newDiscardWriter()
+	case OutputWriter:
+		l.out = newTextWriter(v[0].(io.Writer))
+	case OutputSyslog:
+		l.out = newSyslogWriter(v[0].(string))
 	}
-	// otherwise, the string must be a url
-	u, err := url.Parse(output)
-	if err != nil {
-		return fmt.Errorf("unsupported log output: %s", output)
-	}
-	conn, err := net.Dial(u.Scheme, u.Host)
-	if err != nil {
-		return err
-	}
-	l.SetOutput(newTextWriter(conn))
-	return nil
 }
 
 func (l *Logger) Output(calldepth int, level Level, msg []byte) {
@@ -84,16 +81,6 @@ func (l *Logger) SetFilePrefix(prefix string) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	l.filePrefix = prefix
-}
-
-func (l *Logger) SetOutput(w writer) {
-	l.mu.Lock()
-	defer l.mu.Unlock()
-	l.out = w
-}
-
-func (l *Logger) SetLineOutput(w io.Writer) {
-	l.SetOutput(newTextWriter(w))
 }
 
 func (l *Logger) Fatalf(format string, v ...interface{}) {
