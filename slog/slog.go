@@ -32,7 +32,7 @@ func Write(calldepth int, level Level, msg []byte) {
 	std.Output(calldepth+1, level, msg)
 }
 
-func (l *Logger) CheckLevel(level Level) bool {
+func CheckLevel(level Level) bool {
 	return level <= std.Level()
 }
 
