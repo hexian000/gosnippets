@@ -2,6 +2,7 @@ package slog
 
 import (
 	"fmt"
+	"io"
 )
 
 type Level int32
@@ -28,8 +29,16 @@ func Default() *Logger {
 	return std
 }
 
-func Output(calldepth int, level Level, s string) {
-	std.Output(calldepth+1, level, s, nil)
+func Outputf(calldepth int, level Level, extra func(io.Writer) error, format string, v ...interface{}) error {
+	return std.output(calldepth+1, level, func(b []byte) []byte {
+		return fmt.Appendf(b, format, v...)
+	}, extra)
+}
+
+func Output(calldepth int, level Level, extra func(io.Writer) error, v ...interface{}) error {
+	return std.output(calldepth+1, level, func(b []byte) []byte {
+		return fmt.Append(b, v...)
+	}, extra)
 }
 
 func CheckLevel(level Level) bool {

@@ -53,10 +53,10 @@ func (l *Logger) SetOutput(t OutputType, v ...interface{}) {
 func (l *Logger) output(calldepth int, level Level, appendMessage func([]byte) []byte, writeExtra func(io.Writer) error) error {
 	now := time.Now()
 	_, file, line, ok := runtime.Caller(calldepth)
-	if ok {
-		file = strings.TrimPrefix(file, *l.filePrefix.Load())
-	} else {
+	if !ok {
 		file, line = "???", 0
+	} else if filePrefix := l.filePrefix.Load(); filePrefix != nil {
+		file = strings.TrimPrefix(file, *filePrefix)
 	}
 
 	l.outMu.Lock()
@@ -71,10 +71,16 @@ func (l *Logger) output(calldepth int, level Level, appendMessage func([]byte) [
 	})
 }
 
-func (l *Logger) Output(calldepth int, level Level, s string, writeExtra func(io.Writer) error) error {
+func (l *Logger) Outputf(calldepth int, level Level, extra func(io.Writer) error, format string, v ...interface{}) error {
 	return l.output(calldepth+1, level, func(b []byte) []byte {
-		return append(b, s...)
-	}, writeExtra)
+		return fmt.Appendf(b, format, v...)
+	}, extra)
+}
+
+func (l *Logger) Output(calldepth int, level Level, extra func(io.Writer) error, v ...interface{}) error {
+	return l.output(calldepth+1, level, func(b []byte) []byte {
+		return fmt.Append(b, v...)
+	}, extra)
 }
 
 func (l *Logger) SetLevel(level Level) {

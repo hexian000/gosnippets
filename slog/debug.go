@@ -15,7 +15,7 @@ func Checkf(cond bool, format string, v ...interface{}) {
 		return
 	}
 	s := fmt.Sprintf(format, v...)
-	std.Output(2, LevelFatal, s, nil)
+	std.Output(2, LevelFatal, nil, s)
 	panic(s)
 }
 
@@ -24,7 +24,7 @@ func Check(cond bool, v ...interface{}) {
 		return
 	}
 	s := fmt.Sprint(v...)
-	std.Output(2, LevelFatal, s, nil)
+	std.Output(2, LevelFatal, nil, s)
 	panic(s)
 }
 
