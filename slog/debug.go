@@ -2,7 +2,9 @@ package slog
 
 import (
 	"fmt"
+	"io"
 	"runtime"
+	"strings"
 	"unicode"
 
 	"github.com/mattn/go-runewidth"
@@ -13,7 +15,7 @@ func Checkf(cond bool, format string, v ...interface{}) {
 		return
 	}
 	s := fmt.Sprintf(format, v...)
-	std.Output(2, LevelFatal, s)
+	std.Output(2, LevelFatal, s, nil)
 	panic(s)
 }
 
@@ -22,7 +24,7 @@ func Check(cond bool, v ...interface{}) {
 		return
 	}
 	s := fmt.Sprint(v...)
-	std.Output(2, LevelFatal, s)
+	std.Output(2, LevelFatal, s, nil)
 	panic(s)
 }
 
@@ -32,17 +34,22 @@ const (
 	tabWidth = 4
 )
 
-func appendText(b []byte, txt string) []byte {
+func writeText(w io.Writer, txt string) error {
 	line := 1
 	wrap := 0
 	var width int
 	for _, r := range txt {
 		if wrap == 0 {
-			b = fmt.Appendf(b, "\n%s%4d ", indent, line)
+			if _, err := w.Write([]byte(fmt.Sprintf("%s%4d ", indent, line))); err != nil {
+				return err
+			}
 		}
 		switch r {
 		case '\n':
 			/* soft wrap */
+			if _, err := w.Write([]byte("\n")); err != nil {
+				return err
+			}
 			line++
 			wrap = 0
 			continue
@@ -56,20 +63,29 @@ func appendText(b []byte, txt string) []byte {
 		}
 		if wrap+width > hardWrap {
 			/* hard wrap */
-			b = fmt.Appendf(b, " +\n%s     ", indent)
+			if _, err := w.Write([]byte(fmt.Sprintf(" +\n%s     ", indent))); err != nil {
+				return err
+			}
 			wrap = 0
 		}
 		if r == '\t' {
-			for i := 0; i < width; i++ {
-				b = append(b, ' ')
+			if _, err := w.Write([]byte(strings.Repeat(" ", width))); err != nil {
+				return err
 			}
 			wrap += width
 			continue
 		}
-		b = append(b, string(r)...)
+		if _, err := w.Write([]byte(string(r))); err != nil {
+			return err
+		}
 		wrap += width
 	}
-	return b
+	if wrap > 0 {
+		if _, err := w.Write([]byte("\n")); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func Textf(level Level, txt string, format string, v ...interface{}) {
@@ -77,8 +93,9 @@ func Textf(level Level, txt string, format string, v ...interface{}) {
 		return
 	}
 	std.output(2, level, func(b []byte) []byte {
-		b = fmt.Appendf(b, format, v...)
-		return appendText(b, txt)
+		return fmt.Appendf(b, format, v...)
+	}, func(w io.Writer) error {
+		return writeText(w, txt)
 	})
 }
 
@@ -87,23 +104,32 @@ func Text(level Level, txt string, v ...interface{}) {
 		return
 	}
 	std.output(2, level, func(b []byte) []byte {
-		b = fmt.Append(b, v...)
-		return appendText(b, txt)
+		return fmt.Append(b, v...)
+	}, func(w io.Writer) error {
+		return writeText(w, txt)
 	})
 }
 
-func appendBinary(b []byte, bin []byte) []byte {
+func writeBinary(w io.Writer, bin []byte) error {
 	wrap := 16
 	for i := 0; i < len(bin); i += wrap {
-		b = fmt.Appendf(b, "\n%s%p: ", indent, bin[i:])
+		if _, err := w.Write([]byte(fmt.Sprintf("%s%p: ", indent, bin[i:]))); err != nil {
+			return err
+		}
 		for j := 0; j < wrap; j++ {
 			if (i + j) < len(bin) {
-				b = fmt.Appendf(b, "%02X ", bin[i+j])
+				if _, err := w.Write([]byte(fmt.Sprintf("%02X ", bin[i+j]))); err != nil {
+					return err
+				}
 			} else {
-				b = append(b, "   "...)
+				if _, err := w.Write([]byte("   ")); err != nil {
+					return err
+				}
 			}
 		}
-		b = append(b, ' ')
+		if _, err := w.Write([]byte(" ")); err != nil {
+			return err
+		}
 		for j := 0; j < wrap; j++ {
 			r := ' '
 			if (i + j) < len(bin) {
@@ -112,10 +138,15 @@ func appendBinary(b []byte, bin []byte) []byte {
 					r = '.'
 				}
 			}
-			b = append(b, string(r)...)
+			if _, err := w.Write([]byte(string(r))); err != nil {
+				return err
+			}
+		}
+		if _, err := w.Write([]byte("\n")); err != nil {
+			return err
 		}
 	}
-	return b
+	return nil
 }
 
 func Binaryf(level Level, bin []byte, format string, v ...interface{}) {
@@ -123,8 +154,9 @@ func Binaryf(level Level, bin []byte, format string, v ...interface{}) {
 		return
 	}
 	std.output(2, level, func(b []byte) []byte {
-		b = fmt.Appendf(b, format, v...)
-		return appendBinary(b, bin)
+		return fmt.Appendf(b, format, v...)
+	}, func(w io.Writer) error {
+		return writeBinary(w, bin)
 	})
 }
 
@@ -133,8 +165,9 @@ func Binary(level Level, bin []byte, v ...interface{}) {
 		return
 	}
 	std.output(2, level, func(b []byte) []byte {
-		b = fmt.Append(b, v...)
-		return appendBinary(b, bin)
+		return fmt.Append(b, v...)
+	}, func(w io.Writer) error {
+		return writeBinary(w, bin)
 	})
 }
 
@@ -146,13 +179,11 @@ func Stackf(level Level, format string, v ...interface{}) {
 	}
 	var stack [stackBufSize]byte
 	n := runtime.Stack(stack[:], false)
-	if stack[n-1] == '\n' {
-		n--
-	}
 	std.output(2, level, func(b []byte) []byte {
-		b = fmt.Appendf(b, format, v...)
-		b = append(b, '\n')
-		return append(b, stack[:n]...)
+		return fmt.Appendf(b, format, v...)
+	}, func(w io.Writer) error {
+		_, err := w.Write(stack[:n])
+		return err
 	})
 }
 
@@ -162,12 +193,10 @@ func Stack(level Level, v ...interface{}) {
 	}
 	var stack [stackBufSize]byte
 	n := runtime.Stack(stack[:], false)
-	if stack[n-1] == '\n' {
-		n--
-	}
 	std.output(2, level, func(b []byte) []byte {
-		b = fmt.Append(b, v...)
-		b = append(b, '\n')
-		return append(b, stack[:n]...)
+		return fmt.Append(b, v...)
+	}, func(w io.Writer) error {
+		_, err := w.Write(stack[:n])
+		return err
 	})
 }

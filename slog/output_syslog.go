@@ -41,6 +41,6 @@ func (s *syslogWriter) Write(m *message) error {
 	buf = append(buf, ':')
 	buf = strconv.AppendInt(buf, int64(m.line), 10)
 	buf = append(buf, ' ')
-	buf = m.appendOutput(buf)
+	buf = m.appendMessage(buf)
 	return priorityMap[m.level](s.out, string(buf))
 }

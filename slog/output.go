@@ -9,11 +9,12 @@ import (
 var newSyslogWriter func(string) output
 
 type message struct {
-	timestamp    time.Time
-	level        Level
-	file         string
-	line         int
-	appendOutput func([]byte) []byte
+	timestamp     time.Time
+	level         Level
+	file          string
+	line          int
+	appendMessage func([]byte) []byte
+	writeExtra    func(io.Writer) error
 }
 
 type output interface {
@@ -32,13 +33,27 @@ func (w *discardWriter) Write(*message) error {
 	return nil
 }
 
+type flusher interface {
+	Flush() error
+}
+
 type textWriter struct {
-	out io.Writer
+	out   io.Writer
+	flush func() error
 }
 
 func newTextWriter(out io.Writer) output {
+	flush := func() error {
+		return nil
+	}
+	if f, ok := out.(flusher); ok {
+		flush = func() error {
+			return f.Flush()
+		}
+	}
 	return &textWriter{
-		out: out,
+		out:   out,
+		flush: flush,
 	}
 }
 
@@ -51,8 +66,15 @@ func (w *textWriter) Write(m *message) error {
 	buf = append(buf, ':')
 	buf = strconv.AppendInt(buf, int64(m.line), 10)
 	buf = append(buf, ' ')
-	buf = m.appendOutput(buf)
+	buf = m.appendMessage(buf)
 	buf = append(buf, '\n')
-	_, err := w.out.Write(buf)
-	return err
+	if _, err := w.out.Write(buf); err != nil {
+		return err
+	}
+	if m.writeExtra != nil {
+		if err := m.writeExtra(w.out); err != nil {
+			return err
+		}
+	}
+	return w.flush()
 }

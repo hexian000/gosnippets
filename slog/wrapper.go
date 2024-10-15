@@ -9,7 +9,7 @@ type wrapper struct {
 
 func (w *wrapper) Write(p []byte) (n int, err error) {
 	const calldepth = 4
-	w.l.Output(calldepth, w.level, string(p))
+	w.l.Output(calldepth, w.level, string(p), nil)
 	return len(p), nil
 }
 

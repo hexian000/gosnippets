@@ -50,7 +50,7 @@ func (l *Logger) SetOutput(t OutputType, v ...interface{}) {
 	l.out = w
 }
 
-func (l *Logger) output(calldepth int, level Level, appendOutput func([]byte) []byte) error {
+func (l *Logger) output(calldepth int, level Level, appendMessage func([]byte) []byte, writeExtra func(io.Writer) error) error {
 	now := time.Now()
 	_, file, line, ok := runtime.Caller(calldepth)
 	if ok {
@@ -62,18 +62,19 @@ func (l *Logger) output(calldepth int, level Level, appendOutput func([]byte) []
 	l.outMu.Lock()
 	defer l.outMu.Unlock()
 	return l.out.Write(&message{
-		timestamp:    now,
-		level:        level,
-		file:         file,
-		line:         line,
-		appendOutput: appendOutput,
+		timestamp:     now,
+		level:         level,
+		file:          file,
+		line:          line,
+		appendMessage: appendMessage,
+		writeExtra:    writeExtra,
 	})
 }
 
-func (l *Logger) Output(calldepth int, level Level, s string) error {
+func (l *Logger) Output(calldepth int, level Level, s string, writeExtra func(io.Writer) error) error {
 	return l.output(calldepth+1, level, func(b []byte) []byte {
 		return append(b, s...)
-	})
+	}, writeExtra)
 }
 
 func (l *Logger) SetLevel(level Level) {
@@ -94,7 +95,7 @@ func (l *Logger) Fatalf(format string, v ...interface{}) {
 	}
 	l.output(2, LevelFatal, func(b []byte) []byte {
 		return fmt.Appendf(b, format, v...)
-	})
+	}, nil)
 }
 
 func (l *Logger) Fatal(v ...interface{}) {
@@ -103,7 +104,7 @@ func (l *Logger) Fatal(v ...interface{}) {
 	}
 	l.output(2, LevelFatal, func(b []byte) []byte {
 		return fmt.Append(b, v...)
-	})
+	}, nil)
 }
 
 func (l *Logger) Errorf(format string, v ...interface{}) {
@@ -112,7 +113,7 @@ func (l *Logger) Errorf(format string, v ...interface{}) {
 	}
 	l.output(2, LevelError, func(b []byte) []byte {
 		return fmt.Appendf(b, format, v...)
-	})
+	}, nil)
 }
 
 func (l *Logger) Error(v ...interface{}) {
@@ -121,7 +122,7 @@ func (l *Logger) Error(v ...interface{}) {
 	}
 	l.output(2, LevelError, func(b []byte) []byte {
 		return fmt.Append(b, v...)
-	})
+	}, nil)
 }
 
 func (l *Logger) Warningf(format string, v ...interface{}) {
@@ -130,7 +131,7 @@ func (l *Logger) Warningf(format string, v ...interface{}) {
 	}
 	l.output(2, LevelWarning, func(b []byte) []byte {
 		return fmt.Appendf(b, format, v...)
-	})
+	}, nil)
 }
 
 func (l *Logger) Warning(v ...interface{}) {
@@ -139,7 +140,7 @@ func (l *Logger) Warning(v ...interface{}) {
 	}
 	l.output(2, LevelWarning, func(b []byte) []byte {
 		return fmt.Append(b, v...)
-	})
+	}, nil)
 }
 
 func (l *Logger) Noticef(format string, v ...interface{}) {
@@ -148,7 +149,7 @@ func (l *Logger) Noticef(format string, v ...interface{}) {
 	}
 	l.output(2, LevelNotice, func(b []byte) []byte {
 		return fmt.Appendf(b, format, v...)
-	})
+	}, nil)
 }
 
 func (l *Logger) Notice(v ...interface{}) {
@@ -157,7 +158,7 @@ func (l *Logger) Notice(v ...interface{}) {
 	}
 	l.output(2, LevelNotice, func(b []byte) []byte {
 		return fmt.Append(b, v...)
-	})
+	}, nil)
 }
 
 func (l *Logger) Infof(format string, v ...interface{}) {
@@ -166,7 +167,7 @@ func (l *Logger) Infof(format string, v ...interface{}) {
 	}
 	l.output(2, LevelInfo, func(b []byte) []byte {
 		return fmt.Appendf(b, format, v...)
-	})
+	}, nil)
 }
 
 func (l *Logger) Info(v ...interface{}) {
@@ -175,7 +176,7 @@ func (l *Logger) Info(v ...interface{}) {
 	}
 	l.output(2, LevelInfo, func(b []byte) []byte {
 		return fmt.Append(b, v...)
-	})
+	}, nil)
 }
 
 func (l *Logger) Debugf(format string, v ...interface{}) {
@@ -184,7 +185,7 @@ func (l *Logger) Debugf(format string, v ...interface{}) {
 	}
 	l.output(2, LevelDebug, func(b []byte) []byte {
 		return fmt.Appendf(b, format, v...)
-	})
+	}, nil)
 }
 
 func (l *Logger) Debug(v ...interface{}) {
@@ -193,7 +194,7 @@ func (l *Logger) Debug(v ...interface{}) {
 	}
 	l.output(2, LevelDebug, func(b []byte) []byte {
 		return fmt.Append(b, v...)
-	})
+	}, nil)
 }
 
 func (l *Logger) Verbosef(format string, v ...interface{}) {
@@ -202,7 +203,7 @@ func (l *Logger) Verbosef(format string, v ...interface{}) {
 	}
 	l.output(2, LevelVerbose, func(b []byte) []byte {
 		return fmt.Appendf(b, format, v...)
-	})
+	}, nil)
 }
 
 func (l *Logger) Verbose(v ...interface{}) {
@@ -211,7 +212,7 @@ func (l *Logger) Verbose(v ...interface{}) {
 	}
 	l.output(2, LevelVerbose, func(b []byte) []byte {
 		return fmt.Append(b, v...)
-	})
+	}, nil)
 }
 
 func (l *Logger) VeryVerbosef(format string, v ...interface{}) {
@@ -220,7 +221,7 @@ func (l *Logger) VeryVerbosef(format string, v ...interface{}) {
 	}
 	l.output(2, LevelVeryVerbose, func(b []byte) []byte {
 		return fmt.Appendf(b, format, v...)
-	})
+	}, nil)
 }
 
 func (l *Logger) VeryVerbose(v ...interface{}) {
@@ -229,5 +230,5 @@ func (l *Logger) VeryVerbose(v ...interface{}) {
 	}
 	l.output(2, LevelVeryVerbose, func(b []byte) []byte {
 		return fmt.Append(b, v...)
-	})
+	}, nil)
 }

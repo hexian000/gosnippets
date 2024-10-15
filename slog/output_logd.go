@@ -58,7 +58,7 @@ func (l *logdWriter) Write(m *message) error {
 	buf = append(buf, ':')
 	buf = strconv.AppendInt(buf, int64(m.line), 10)
 	buf = append(buf, ' ')
-	buf = m.appendOutput(buf)
+	buf = m.appendMessage(buf)
 	buf = append(buf, 0)
 	_, err := l.out.Write(buf)
 	return err
