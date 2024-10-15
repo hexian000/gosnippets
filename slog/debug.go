@@ -35,21 +35,22 @@ const (
 )
 
 func writeText(w io.Writer, txt string) error {
+	b := make([]byte, 0, 256)
 	line := 1
 	wrap := 0
 	var width int
 	for _, r := range txt {
 		if wrap == 0 {
-			if _, err := w.Write([]byte(fmt.Sprintf("%s%4d ", indent, line))); err != nil {
-				return err
-			}
+			b = fmt.Appendf(b, "%s%4d ", indent, line)
 		}
 		switch r {
 		case '\n':
 			/* soft wrap */
-			if _, err := w.Write([]byte("\n")); err != nil {
+			b = append(b, '\n')
+			if _, err := w.Write(b); err != nil {
 				return err
 			}
+			b = b[:0]
 			line++
 			wrap = 0
 			continue
@@ -63,27 +64,26 @@ func writeText(w io.Writer, txt string) error {
 		}
 		if wrap+width > hardWrap {
 			/* hard wrap */
-			if _, err := w.Write([]byte(fmt.Sprintf(" +\n%s     ", indent))); err != nil {
+			b = fmt.Appendf(b, " +\n%s     ", indent)
+			if _, err := w.Write(b); err != nil {
 				return err
 			}
+			b = b[:0]
 			wrap = 0
 		}
 		if r == '\t' {
-			if _, err := w.Write([]byte(strings.Repeat(" ", width))); err != nil {
-				return err
-			}
+			b = append(b, strings.Repeat(" ", width)...)
 			wrap += width
 			continue
 		}
-		if _, err := w.Write([]byte(string(r))); err != nil {
-			return err
-		}
+		b = append(b, string(r)...)
 		wrap += width
 	}
 	if wrap > 0 {
-		if _, err := w.Write([]byte("\n")); err != nil {
-			return err
-		}
+		b = append(b, '\n')
+	}
+	if _, err := w.Write(b); err != nil {
+		return err
 	}
 	return nil
 }
@@ -111,25 +111,18 @@ func Text(level Level, txt string, v ...interface{}) {
 }
 
 func writeBinary(w io.Writer, bin []byte) error {
+	b := make([]byte, 0, 256)
 	wrap := 16
 	for i := 0; i < len(bin); i += wrap {
-		if _, err := w.Write([]byte(fmt.Sprintf("%s%p: ", indent, bin[i:]))); err != nil {
-			return err
-		}
+		b = fmt.Appendf(b, "%s%p: ", indent, bin[i:])
 		for j := 0; j < wrap; j++ {
 			if (i + j) < len(bin) {
-				if _, err := w.Write([]byte(fmt.Sprintf("%02X ", bin[i+j]))); err != nil {
-					return err
-				}
+				b = fmt.Appendf(b, "%02X ", bin[i+j])
 			} else {
-				if _, err := w.Write([]byte("   ")); err != nil {
-					return err
-				}
+				b = append(b, "   "...)
 			}
 		}
-		if _, err := w.Write([]byte(" ")); err != nil {
-			return err
-		}
+		b = append(b, ' ')
 		for j := 0; j < wrap; j++ {
 			r := ' '
 			if (i + j) < len(bin) {
@@ -138,13 +131,13 @@ func writeBinary(w io.Writer, bin []byte) error {
 					r = '.'
 				}
 			}
-			if _, err := w.Write([]byte(string(r))); err != nil {
-				return err
-			}
+			b = append(b, string(r)...)
 		}
-		if _, err := w.Write([]byte("\n")); err != nil {
+		b = append(b, '\n')
+		if _, err := w.Write(b); err != nil {
 			return err
 		}
+		b = b[:0]
 	}
 	return nil
 }
