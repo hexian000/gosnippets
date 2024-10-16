@@ -11,30 +11,37 @@ var (
 )
 
 type Group interface {
-	Go(func()) error
+	Go(func() error) error
 	Close()
 	CloseC() <-chan struct{}
-	Wait()
+	Wait() error
 }
 
 type group struct {
 	wg      sync.WaitGroup
 	closeCh chan struct{}
+	errorCh chan error
 }
 
 func NewGroup() Group {
 	g := &group{
 		closeCh: make(chan struct{}),
+		errorCh: make(chan error, 1),
 	}
 	return g
 }
 
-func (g *group) wrapper(f func()) {
+func (g *group) wrapper(f func() error) {
 	defer g.wg.Done()
-	f()
+	if err := f(); err != nil {
+		select {
+		case g.errorCh <- err:
+		default:
+		}
+	}
 }
 
-func (g *group) Go(f func()) error {
+func (g *group) Go(f func() error) error {
 	select {
 	case <-g.closeCh:
 		return ErrClosed
@@ -53,33 +60,46 @@ func (g *group) CloseC() <-chan struct{} {
 	return g.closeCh
 }
 
-func (g *group) Wait() {
+func (g *group) Wait() error {
 	g.wg.Wait()
+	select {
+	case err := <-g.errorCh:
+		return err
+	default:
+	}
+	return nil
 }
 
 type limitedGroup struct {
 	wg        sync.WaitGroup
 	routineCh chan struct{}
 	closeCh   chan struct{}
+	errorCh   chan error
 }
 
 func NewLimitedGroup(limit int) Group {
 	g := &limitedGroup{
 		routineCh: make(chan struct{}, limit),
 		closeCh:   make(chan struct{}),
+		errorCh:   make(chan error, 1),
 	}
 	return g
 }
 
-func (g *limitedGroup) wrapper(f func()) {
+func (g *limitedGroup) wrapper(f func() error) {
 	defer func() {
 		<-g.routineCh
 		g.wg.Done()
 	}()
-	f()
+	if err := f(); err != nil {
+		select {
+		case g.errorCh <- err:
+		default:
+		}
+	}
 }
 
-func (g *limitedGroup) Go(f func()) error {
+func (g *limitedGroup) Go(f func() error) error {
 	select {
 	case <-g.closeCh:
 		return ErrClosed
@@ -100,6 +120,12 @@ func (g *limitedGroup) CloseC() <-chan struct{} {
 	return g.closeCh
 }
 
-func (g *limitedGroup) Wait() {
+func (g *limitedGroup) Wait() error {
 	g.wg.Wait()
+	select {
+	case err := <-g.errorCh:
+		return err
+	default:
+	}
+	return nil
 }
