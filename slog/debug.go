@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"runtime"
-	"strings"
 	"unicode"
 
 	"github.com/mattn/go-runewidth"
@@ -31,18 +30,21 @@ func Check(cond bool, v ...interface{}) {
 const (
 	indent   = "  "
 	hardWrap = 70
-	tabWidth = 4
+	tabSpace = "    "
 )
 
 func writeText(w io.Writer, txt string) error {
-	b := make([]byte, 0, 256)
-	line := 1
-	wrap := 0
-	var width int
+	var buf [256]byte
+	b := buf[:]
+	lineno := true
+	line, column := 0, 0
 	for _, r := range txt {
-		if wrap == 0 {
+		if lineno {
+			line++
 			b = fmt.Appendf(b, "%s%4d ", indent, line)
+			lineno = false
 		}
+		var width int
 		switch r {
 		case '\n':
 			/* soft wrap */
@@ -51,35 +53,41 @@ func writeText(w io.Writer, txt string) error {
 				return err
 			}
 			b = b[:0]
-			line++
-			wrap = 0
+			column = 0
+			lineno = true
 			continue
 		case '\t':
-			width = tabWidth - wrap%tabWidth
+			width = len(tabSpace) - column%len(tabSpace)
 		default:
 			if !unicode.IsPrint(r) {
 				r = '?'
 			}
 			width = runewidth.RuneWidth(r)
 		}
-		if wrap+width > hardWrap {
+		if column+width > hardWrap {
 			/* hard wrap */
 			b = fmt.Appendf(b, " +\n%s     ", indent)
 			if _, err := w.Write(b); err != nil {
 				return err
 			}
 			b = b[:0]
-			wrap = 0
+			column = 0
 		}
 		if r == '\t' {
-			b = append(b, strings.Repeat(" ", width)...)
-			wrap += width
-			continue
+			b = append(b, tabSpace[:width]...)
+			column += width
+		} else {
+			b = append(b, string(r)...)
+			column += width
 		}
-		b = append(b, string(r)...)
-		wrap += width
+		if cap(b)-len(b) < 16 {
+			if _, err := w.Write(b); err != nil {
+				return err
+			}
+			b = b[:0]
+		}
 	}
-	if wrap > 0 {
+	if column > 0 {
 		b = append(b, '\n')
 	}
 	if _, err := w.Write(b); err != nil {
@@ -111,7 +119,8 @@ func Text(level Level, txt string, v ...interface{}) {
 }
 
 func writeBinary(w io.Writer, bin []byte) error {
-	b := make([]byte, 0, 256)
+	var buf [256]byte
+	b := buf[:]
 	wrap := 16
 	for i := 0; i < len(bin); i += wrap {
 		b = fmt.Appendf(b, "%s%p: ", indent, bin[i:])
