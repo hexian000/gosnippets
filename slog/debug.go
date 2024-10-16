@@ -29,7 +29,7 @@ func Check(cond bool, v ...interface{}) {
 
 const (
 	indent   = "  "
-	hardWrap = 70
+	hardWrap = 110
 	tabSpace = "    "
 )
 
