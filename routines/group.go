@@ -2,6 +2,7 @@ package routines
 
 import (
 	"errors"
+	"fmt"
 	"sync"
 )
 
@@ -11,7 +12,7 @@ var (
 )
 
 type Group interface {
-	Go(func() error) error
+	Go(func()) error
 	Close()
 	CloseC() <-chan struct{}
 	Wait() error
@@ -31,17 +32,20 @@ func NewGroup() Group {
 	return g
 }
 
-func (g *group) wrapper(f func() error) {
-	defer g.wg.Done()
-	if err := f(); err != nil {
-		select {
-		case g.errorCh <- err:
-		default:
+func (g *group) wrapper(f func()) {
+	defer func() {
+		if err := recover(); err != nil {
+			select {
+			case g.errorCh <- fmt.Errorf("%v", err):
+			default:
+			}
 		}
-	}
+		g.wg.Done()
+	}()
+	f()
 }
 
-func (g *group) Go(f func() error) error {
+func (g *group) Go(f func()) error {
 	select {
 	case <-g.closeCh:
 		return ErrClosed
@@ -86,20 +90,21 @@ func NewLimitedGroup(limit int) Group {
 	return g
 }
 
-func (g *limitedGroup) wrapper(f func() error) {
+func (g *limitedGroup) wrapper(f func()) {
 	defer func() {
+		if err := recover(); err != nil {
+			select {
+			case g.errorCh <- fmt.Errorf("%v", err):
+			default:
+			}
+		}
 		<-g.routineCh
 		g.wg.Done()
 	}()
-	if err := f(); err != nil {
-		select {
-		case g.errorCh <- err:
-		default:
-		}
-	}
+	f()
 }
 
-func (g *limitedGroup) Go(f func() error) error {
+func (g *limitedGroup) Go(f func()) error {
 	select {
 	case <-g.closeCh:
 		return ErrClosed
