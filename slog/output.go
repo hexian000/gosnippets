@@ -57,10 +57,13 @@ func newTextWriter(out io.Writer) output {
 	}
 }
 
+/* TimeLayout is a fixed-length layout conforming to ISO 8601 */
+const TimeLayout = "2006-01-02T15:04:05-0700"
+
 func (w *textWriter) Write(m *message) error {
 	buf := make([]byte, 0, bufSize)
 	buf = append(buf, levelChar[m.level], ' ')
-	buf = m.timestamp.AppendFormat(buf, time.RFC3339)
+	buf = m.timestamp.AppendFormat(buf, TimeLayout)
 	buf = append(buf, ' ')
 	buf = append(buf, m.file...)
 	buf = append(buf, ':')
