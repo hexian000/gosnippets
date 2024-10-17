@@ -11,6 +11,20 @@ var (
 	ErrConcurrencyLimit = errors.New("concurrency limit is exceeded")
 )
 
+type ErrPanic struct {
+	v any
+}
+
+func (p ErrPanic) Panic() any {
+	return p.v
+}
+
+func (p ErrPanic) Error() string {
+	return fmt.Sprintf("panic: %v", p.v)
+}
+
+var _ = error(ErrPanic{})
+
 type Group interface {
 	Go(func()) error
 	Close()
@@ -34,9 +48,9 @@ func NewGroup() Group {
 
 func (g *group) wrapper(f func()) {
 	defer func() {
-		if err := recover(); err != nil {
+		if v := recover(); v != nil {
 			select {
-			case g.errorCh <- fmt.Errorf("%v", err):
+			case g.errorCh <- ErrPanic{v}:
 			default:
 			}
 		}
@@ -92,9 +106,9 @@ func NewLimitedGroup(limit int) Group {
 
 func (g *limitedGroup) wrapper(f func()) {
 	defer func() {
-		if err := recover(); err != nil {
+		if v := recover(); v != nil {
 			select {
-			case g.errorCh <- fmt.Errorf("%v", err):
+			case g.errorCh <- &ErrPanic{v}:
 			default:
 			}
 		}
