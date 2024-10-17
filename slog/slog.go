@@ -50,7 +50,7 @@ func Fatalf(format string, v ...interface{}) {
 	if !CheckLevel(LevelFatal) {
 		return
 	}
-	std.output(2, LevelFatal, func(b []byte) []byte {
+	std.output(1, LevelFatal, func(b []byte) []byte {
 		return fmt.Appendf(b, format, v...)
 	}, nil)
 }
@@ -60,7 +60,7 @@ func Fatal(v ...interface{}) {
 	if !CheckLevel(LevelFatal) {
 		return
 	}
-	std.output(2, LevelFatal, func(b []byte) []byte {
+	std.output(1, LevelFatal, func(b []byte) []byte {
 		return fmt.Append(b, v...)
 	}, nil)
 }
@@ -70,7 +70,7 @@ func Errorf(format string, v ...interface{}) {
 	if !CheckLevel(LevelError) {
 		return
 	}
-	std.output(2, LevelError, func(b []byte) []byte {
+	std.output(1, LevelError, func(b []byte) []byte {
 		return fmt.Appendf(b, format, v...)
 	}, nil)
 }
@@ -80,7 +80,7 @@ func Error(v ...interface{}) {
 	if !CheckLevel(LevelError) {
 		return
 	}
-	std.output(2, LevelError, func(b []byte) []byte {
+	std.output(1, LevelError, func(b []byte) []byte {
 		return fmt.Append(b, v...)
 	}, nil)
 }
@@ -90,7 +90,7 @@ func Warningf(format string, v ...interface{}) {
 	if !CheckLevel(LevelWarning) {
 		return
 	}
-	std.output(2, LevelWarning, func(b []byte) []byte {
+	std.output(1, LevelWarning, func(b []byte) []byte {
 		return fmt.Appendf(b, format, v...)
 	}, nil)
 }
@@ -100,7 +100,7 @@ func Warning(v ...interface{}) {
 	if !CheckLevel(LevelWarning) {
 		return
 	}
-	std.output(2, LevelWarning, func(b []byte) []byte {
+	std.output(1, LevelWarning, func(b []byte) []byte {
 		return fmt.Append(b, v...)
 	}, nil)
 }
@@ -110,7 +110,7 @@ func Noticef(format string, v ...interface{}) {
 	if !CheckLevel(LevelNotice) {
 		return
 	}
-	std.output(2, LevelNotice, func(b []byte) []byte {
+	std.output(1, LevelNotice, func(b []byte) []byte {
 		return fmt.Appendf(b, format, v...)
 	}, nil)
 }
@@ -120,7 +120,7 @@ func Notice(v ...interface{}) {
 	if !CheckLevel(LevelNotice) {
 		return
 	}
-	std.output(2, LevelNotice, func(b []byte) []byte {
+	std.output(1, LevelNotice, func(b []byte) []byte {
 		return fmt.Append(b, v...)
 	}, nil)
 }
@@ -130,7 +130,7 @@ func Infof(format string, v ...interface{}) {
 	if !CheckLevel(LevelInfo) {
 		return
 	}
-	std.output(2, LevelInfo, func(b []byte) []byte {
+	std.output(1, LevelInfo, func(b []byte) []byte {
 		return fmt.Appendf(b, format, v...)
 	}, nil)
 }
@@ -140,7 +140,7 @@ func Info(v ...interface{}) {
 	if !CheckLevel(LevelInfo) {
 		return
 	}
-	std.output(2, LevelInfo, func(b []byte) []byte {
+	std.output(1, LevelInfo, func(b []byte) []byte {
 		return fmt.Append(b, v...)
 	}, nil)
 }
@@ -150,7 +150,7 @@ func Debugf(format string, v ...interface{}) {
 	if !CheckLevel(LevelDebug) {
 		return
 	}
-	std.output(2, LevelDebug, func(b []byte) []byte {
+	std.output(1, LevelDebug, func(b []byte) []byte {
 		return fmt.Appendf(b, format, v...)
 	}, nil)
 }
@@ -160,7 +160,7 @@ func Debug(v ...interface{}) {
 	if !CheckLevel(LevelDebug) {
 		return
 	}
-	std.output(2, LevelDebug, func(b []byte) []byte {
+	std.output(1, LevelDebug, func(b []byte) []byte {
 		return fmt.Append(b, v...)
 	}, nil)
 }
@@ -170,7 +170,7 @@ func Verbosef(format string, v ...interface{}) {
 	if !CheckLevel(LevelVerbose) {
 		return
 	}
-	std.output(2, LevelVerbose, func(b []byte) []byte {
+	std.output(1, LevelVerbose, func(b []byte) []byte {
 		return fmt.Appendf(b, format, v...)
 	}, nil)
 }
@@ -180,7 +180,7 @@ func Verbose(v ...interface{}) {
 	if !CheckLevel(LevelVerbose) {
 		return
 	}
-	std.output(2, LevelVerbose, func(b []byte) []byte {
+	std.output(1, LevelVerbose, func(b []byte) []byte {
 		return fmt.Append(b, v...)
 	}, nil)
 }
@@ -190,7 +190,7 @@ func VeryVerbosef(format string, v ...interface{}) {
 	if !CheckLevel(LevelVeryVerbose) {
 		return
 	}
-	std.output(2, LevelVeryVerbose, func(b []byte) []byte {
+	std.output(1, LevelVeryVerbose, func(b []byte) []byte {
 		return fmt.Appendf(b, format, v...)
 	}, nil)
 }
@@ -200,7 +200,7 @@ func VeryVerbose(v ...interface{}) {
 	if !CheckLevel(LevelVeryVerbose) {
 		return
 	}
-	std.output(2, LevelVeryVerbose, func(b []byte) []byte {
+	std.output(1, LevelVeryVerbose, func(b []byte) []byte {
 		return fmt.Append(b, v...)
 	}, nil)
 }

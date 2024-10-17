@@ -14,7 +14,7 @@ func Checkf(cond bool, format string, v ...interface{}) {
 		return
 	}
 	s := fmt.Sprintf(format, v...)
-	std.Output(2, LevelFatal, nil, s)
+	std.Output(1, LevelFatal, nil, s)
 	panic(s)
 }
 
@@ -23,7 +23,7 @@ func Check(cond bool, v ...interface{}) {
 		return
 	}
 	s := fmt.Sprint(v...)
-	std.Output(2, LevelFatal, nil, s)
+	std.Output(1, LevelFatal, nil, s)
 	panic(s)
 }
 
@@ -100,7 +100,7 @@ func Textf(level Level, txt string, format string, v ...interface{}) {
 	if !CheckLevel(level) {
 		return
 	}
-	std.output(2, level, func(b []byte) []byte {
+	std.output(1, level, func(b []byte) []byte {
 		return fmt.Appendf(b, format, v...)
 	}, func(w io.Writer) error {
 		return writeText(w, txt)
@@ -111,7 +111,7 @@ func Text(level Level, txt string, v ...interface{}) {
 	if !CheckLevel(level) {
 		return
 	}
-	std.output(2, level, func(b []byte) []byte {
+	std.output(1, level, func(b []byte) []byte {
 		return fmt.Append(b, v...)
 	}, func(w io.Writer) error {
 		return writeText(w, txt)
@@ -155,7 +155,7 @@ func Binaryf(level Level, bin []byte, format string, v ...interface{}) {
 	if !CheckLevel(level) {
 		return
 	}
-	std.output(2, level, func(b []byte) []byte {
+	std.output(1, level, func(b []byte) []byte {
 		return fmt.Appendf(b, format, v...)
 	}, func(w io.Writer) error {
 		return writeBinary(w, bin)
@@ -166,39 +166,63 @@ func Binary(level Level, bin []byte, v ...interface{}) {
 	if !CheckLevel(level) {
 		return
 	}
-	std.output(2, level, func(b []byte) []byte {
+	std.output(1, level, func(b []byte) []byte {
 		return fmt.Append(b, v...)
 	}, func(w io.Writer) error {
 		return writeBinary(w, bin)
 	})
 }
 
-const stackBufSize = 4096
+func writeStacktrace(w io.Writer, frames *runtime.Frames) error {
+	frame, more := frames.Next()
+	for index := 1; frame != (runtime.Frame{}); index++ {
+		var line string
+		if frame.Function != "" && frame.File != "" {
+			line = fmt.Sprintf("%s#%-3d 0x%x in %s (%s:%d)\n", indent, index,
+				frame.PC, frame.Function, frame.File, frame.Line)
+		} else if frame.Function != "" {
+			line = fmt.Sprintf("%s#%-3d 0x%x %s+0x%x\n", indent, index,
+				frame.PC, frame.Function, frame.PC-frame.Entry)
+		} else {
+			line = fmt.Sprintf("%s#%-3d 0x%x <unknown>\n", indent, index, frame.PC)
+		}
+		if _, err := w.Write([]byte(line)); err != nil {
+			return err
+		}
+		if !more {
+			break
+		}
+		frame, more = frames.Next()
+	}
+	return nil
+}
 
-func Stackf(level Level, format string, v ...interface{}) {
+const stackMaxDepth = 256
+
+func Stackf(level Level, calldepth int, format string, v ...interface{}) {
 	if !CheckLevel(level) {
 		return
 	}
-	var stack [stackBufSize]byte
-	n := runtime.Stack(stack[:], false)
-	std.output(2, level, func(b []byte) []byte {
+	pc := make([]uintptr, stackMaxDepth)
+	n := runtime.Callers(calldepth+2, pc)
+	frames := runtime.CallersFrames(pc[:n])
+	std.output(1, level, func(b []byte) []byte {
 		return fmt.Appendf(b, format, v...)
 	}, func(w io.Writer) error {
-		_, err := w.Write(stack[:n])
-		return err
+		return writeStacktrace(w, frames)
 	})
 }
 
-func Stack(level Level, v ...interface{}) {
+func Stack(level Level, calldepth int, v ...interface{}) {
 	if !CheckLevel(level) {
 		return
 	}
-	var stack [stackBufSize]byte
-	n := runtime.Stack(stack[:], false)
-	std.output(2, level, func(b []byte) []byte {
+	pc := make([]uintptr, stackMaxDepth)
+	n := runtime.Callers(calldepth+2, pc)
+	frames := runtime.CallersFrames(pc[:n])
+	std.output(1, level, func(b []byte) []byte {
 		return fmt.Append(b, v...)
 	}, func(w io.Writer) error {
-		_, err := w.Write(stack[:n])
-		return err
+		return writeStacktrace(w, frames)
 	})
 }

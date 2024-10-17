@@ -19,6 +19,6 @@ func init() {
 func BenchmarkOutput(b *testing.B) {
 	testData := "The quick brown fox jumps over the lazy dog.🍌 "
 	for i := 1; i < b.N; i++ {
-		slog.Output(2, slog.LevelFatal, nil, testData)
+		slog.Output(0, slog.LevelFatal, nil, testData)
 	}
 }
