@@ -12,4 +12,4 @@ Minimized Go code snippets.
 
 - /net
   - `net/hlistener`: TCP listener which is hardened for authenticated services.
-  - `net/flowmeter.go`: data usage meter for Conn.
+  - `net/flowmeter.go`: data usage meter for `net.Conn`.
