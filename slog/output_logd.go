@@ -1,3 +1,6 @@
+// gosnippets (c) 2023-2024 He Xian <hexian000@outlook.com>
+// This code is licensed under MIT license (see LICENSE for details)
+
 //go:build android
 // +build android
 

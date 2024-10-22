@@ -1,3 +1,6 @@
+// gosnippets (c) 2023-2024 He Xian <hexian000@outlook.com>
+// This code is licensed under MIT license (see LICENSE for details)
+
 //go:build !windows && !android && !plan9
 // +build !windows,!android,!plan9
 
