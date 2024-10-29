@@ -64,13 +64,13 @@ func IECBytes(value float64) string {
 	v := math.Ldexp(value, e*-10)
 	if e > 0 {
 		if -10.0 < v && v < 10.0 {
-			return fmt.Sprintf("%.2f %s", v, iecUnits[e])
+			return fmt.Sprintf("%.2f%s", v, iecUnits[e])
 		}
 		if -100.0 < v && v < 100.0 {
-			return fmt.Sprintf("%.1f %s", v, iecUnits[e])
+			return fmt.Sprintf("%.1f%s", v, iecUnits[e])
 		}
 	}
-	return fmt.Sprintf("%.0f %s", v, iecUnits[e])
+	return fmt.Sprintf("%.0f%s", v, iecUnits[e])
 }
 
 // DurationSeconds formats the truncated duration
