@@ -27,7 +27,7 @@ func SIPrefix(value float64) string {
 	}
 	e := int(math.Floor(math.Log10(math.Abs(value)) / 3.0))
 	if e == 0 {
-		return fmt.Sprintf("%.6g", value)
+		return fmt.Sprintf("%.4g", value)
 	}
 	if e < 0 {
 		i := -e
@@ -36,7 +36,7 @@ func SIPrefix(value float64) string {
 		}
 		v := value / math.Pow(10.0, -3.0*float64(i))
 		prefix := siPrefixNeg[i-1]
-		return fmt.Sprintf("%.6g%s", v, prefix)
+		return fmt.Sprintf("%.4g%s", v, prefix)
 	}
 	i := e
 	if i > len(siPrefixPos) {
@@ -44,7 +44,7 @@ func SIPrefix(value float64) string {
 	}
 	v := value / math.Pow(10.0, 3.0*float64(i))
 	prefix := siPrefixPos[i-1]
-	return fmt.Sprintf("%.6g%s", v, prefix)
+	return fmt.Sprintf("%.4g%s", v, prefix)
 }
 
 var iecUnits = [...]string{
