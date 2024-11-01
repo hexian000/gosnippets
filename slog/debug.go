@@ -39,17 +39,24 @@ const (
 func writeText(w io.Writer, txt string) error {
 	var buf [256]byte
 	b := buf[:]
-	lineno := true
+	newline := true
+	cr := false
 	line, column := 0, 0
 	for _, r := range txt {
-		if lineno {
+		if cr && r == '\n' {
+			/* skip CRLF */
+			cr = false
+			continue
+		}
+		cr = (r == '\r')
+		if newline {
 			line++
 			b = fmt.Appendf(b, "%s%4d ", indent, line)
-			lineno = false
+			newline = false
 		}
 		var width int
 		switch r {
-		case '\n':
+		case '\r', '\n':
 			/* soft wrap */
 			b = append(b, '\n')
 			if _, err := w.Write(b); err != nil {
@@ -57,7 +64,7 @@ func writeText(w io.Writer, txt string) error {
 			}
 			b = b[:0]
 			column = 0
-			lineno = true
+			newline = true
 			continue
 		case '\t':
 			width = len(tabSpace) - column%len(tabSpace)
@@ -75,6 +82,10 @@ func writeText(w io.Writer, txt string) error {
 			}
 			b = b[:0]
 			column = 0
+			if r == '\t' {
+				/* recalculate tab width */
+				width = len(tabSpace)
+			}
 		}
 		if r == '\t' {
 			b = append(b, tabSpace[:width]...)
