@@ -188,11 +188,15 @@ func Binary(level Level, bin []byte, v ...interface{}) {
 }
 
 func writeStacktrace(w io.Writer, pc []uintptr) error {
+	if len(pc) == 0 {
+		return nil
+	}
 	frames := runtime.CallersFrames(pc)
 	var lastEntry uintptr
 	index := 1
-	frame, more := frames.Next()
-	for frame != (runtime.Frame{}) {
+	for {
+		frame, more := frames.Next()
+
 		if frame.Func != nil {
 			entry := frame.Func.Entry()
 			if entry != lastEntry {
@@ -202,23 +206,25 @@ func writeStacktrace(w io.Writer, pc []uintptr) error {
 				lastEntry = entry
 			}
 		}
-		var line string
 		if frame.Function != "" && frame.File != "" {
-			line = fmt.Sprintf("%s#%-3d 0x%x in %s (%s:%d)\n", indent, index,
-				frame.PC, frame.Function, frame.File, frame.Line)
+			if _, err := fmt.Fprintf(w, "%s#%-3d 0x%x in %s (%s:%d)\n", indent, index,
+				frame.PC, frame.Function, frame.File, frame.Line); err != nil {
+				return err
+			}
 		} else if frame.Function != "" {
-			line = fmt.Sprintf("%s#%-3d 0x%x %s+0x%x\n", indent, index,
-				frame.PC, frame.Function, frame.PC-frame.Entry)
+			if _, err := fmt.Fprintf(w, "%s#%-3d 0x%x %s+0x%x\n", indent, index,
+				frame.PC, frame.Function, frame.PC-frame.Entry); err != nil {
+				return err
+			}
 		} else {
-			line = fmt.Sprintf("%s#%-3d 0x%x <unknown>\n", indent, index, frame.PC)
+			if _, err := fmt.Fprintf(w, "%s#%-3d 0x%x <unknown>\n", indent, index, frame.PC); err != nil {
+				return err
+			}
 		}
-		if _, err := w.Write([]byte(line)); err != nil {
-			return err
-		}
+
 		if !more {
 			break
 		}
-		frame, more = frames.Next()
 	}
 	return nil
 }
