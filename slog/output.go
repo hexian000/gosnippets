@@ -60,7 +60,7 @@ func newTextWriter(out io.Writer) output {
 	}
 }
 
-/* TimeLayout is a fixed-length layout conforming to RFC 3339 */
+/* TimeLayout is a fixed-length layout conforming to both ISO 8601 and RFC 3339 */
 const TimeLayout = "2006-01-02T15:04:05-07:00"
 
 func (w *textWriter) Write(m *message) error {
