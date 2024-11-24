@@ -13,6 +13,28 @@ func isNormal(f float64) bool {
 	return !math.IsNaN(f) && !math.IsInf(f, 0) && f != 0.0
 }
 
+func formatAbnormal(f float64) string {
+	if math.IsNaN(f) {
+		if math.Signbit(f) {
+			return "-nan"
+		}
+		return "nan"
+	}
+	if math.IsInf(f, 0) {
+		if math.Signbit(f) {
+			return "-inf"
+		}
+		return "inf"
+	}
+	if f == 0.0 {
+		if math.Signbit(f) {
+			return "-0"
+		}
+		return "0"
+	}
+	return fmt.Sprintf("%e", f)
+}
+
 var siPrefixPos = [...]string{
 	"k", "M", "G", "T", "P", "E", "Z", "Y", "R", "Q",
 }
@@ -23,7 +45,10 @@ var siPrefixNeg = [...]string{
 
 func SIPrefix(value float64) string {
 	if !isNormal(value) {
-		return fmt.Sprintf("%.0f", value)
+		return formatAbnormal(value)
+	}
+	if !(1e-30 < value && value < 1e+31) {
+		return fmt.Sprintf("%.2e", value)
 	}
 	e := int(math.Floor(math.Log10(math.Abs(value)) / 3.0))
 	if e == 0 {
@@ -53,7 +78,7 @@ var iecUnits = [...]string{
 
 func IECBytes(value float64) string {
 	if !isNormal(value) {
-		return fmt.Sprintf("%.0f", value)
+		return formatAbnormal(value)
 	}
 	e := (int(math.Log2(math.Abs(value))) - 1) / 10
 	if e < 0 {
