@@ -215,16 +215,14 @@ func Duration(d time.Duration) string {
 		return fmt.Sprintf("%s%.0fms", sign, millis)
 	}
 	if milli != 0 {
+		millis := float64(milli) + float64(micro)*1e-3 + float64(nano)*1e-6
 		if milli >= 100 {
-			millis := float64(milli) + float64(micro)*1e-3 + float64(nano)*1e-6
 			return fmt.Sprintf("%s%.1fms", sign, millis)
 		}
 		if milli >= 10 {
-			millis := float64(milli) + float64(micro)*1e-3 + float64(nano)*1e-6
 			return fmt.Sprintf("%s%.2fms", sign, millis)
 		}
-		micros := float64(milli)*1e+3 + float64(micro) + float64(nano)*1e-3
-		return fmt.Sprintf("%s%.0fµs", sign, micros)
+		return fmt.Sprintf("%s%.3fms", sign, millis)
 	}
 	if micro != 0 {
 		if micro >= 100 {
