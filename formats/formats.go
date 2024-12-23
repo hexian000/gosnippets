@@ -47,10 +47,11 @@ func SIPrefix(value float64) string {
 	if !isNormal(value) {
 		return formatAbnormal(value)
 	}
-	if !(1e-30 < value && value < 1e+31) {
+	absvalue := math.Abs(value)
+	if !(1e-30 < absvalue && absvalue < 1e+31) {
 		return fmt.Sprintf("%.2e", value)
 	}
-	e := int(math.Floor(math.Log10(math.Abs(value)) / 3.0))
+	e := int(math.Floor(math.Log10(absvalue) / 3.0))
 	if e == 0 {
 		return fmt.Sprintf("%.3g", value)
 	}
