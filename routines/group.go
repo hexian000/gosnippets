@@ -1,4 +1,4 @@
-// gosnippets (c) 2023-2024 He Xian <hexian000@outlook.com>
+// gosnippets (c) 2023-2025 He Xian <hexian000@outlook.com>
 // This code is licensed under MIT license (see LICENSE for details)
 
 package routines
