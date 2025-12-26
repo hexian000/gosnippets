@@ -11,6 +11,7 @@ import (
 
 var errFormat = errors.New("format error")
 
+// Error returns a detailed string representation of the given error.
 func Error(err error) string {
 	if err == nil {
 		return "nil"

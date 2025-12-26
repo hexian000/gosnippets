@@ -5,6 +5,7 @@ package systemd
 
 import "errors"
 
+// Systemd notification states
 const (
 	Ready     = "READY=1"
 	Stopping  = "STOPPING=1"

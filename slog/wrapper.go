@@ -16,6 +16,7 @@ func (w *wrapper) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
+// Wrap wraps the given Logger into a standard log.Logger with the specified log level.
 func Wrap(logger *Logger, level Level) *log.Logger {
 	return log.New(&wrapper{logger, level}, "", 0)
 }

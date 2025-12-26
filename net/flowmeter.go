@@ -8,6 +8,7 @@ import (
 	"sync/atomic"
 )
 
+// FlowStats keeps track of the number of bytes read and written.
 type FlowStats struct {
 	Read    atomic.Uint64
 	Written atomic.Uint64
@@ -30,9 +31,10 @@ func (c *meteredConn) Write(b []byte) (n int, err error) {
 	return
 }
 
+// FlowMeter wraps the given net.Conn and tracks the number of bytes read and written.
 func FlowMeter(c net.Conn, m *FlowStats) net.Conn {
-	// early validation
-	m.Read.Add(0)
-	m.Written.Add(0)
+	// validate the pointer to FlowStats early
+	_ = m.Read.Add(0)
+	_ = m.Written.Add(0)
 	return &meteredConn{c, m}
 }

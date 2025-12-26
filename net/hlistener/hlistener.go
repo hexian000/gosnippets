@@ -13,6 +13,7 @@ import (
 	"github.com/hexian000/gosnippets/slog"
 )
 
+// Config represents the configuration for the hardened listener.
 type Config struct {
 	Start, Full uint32
 	Rate        float64 // 0-1
@@ -20,8 +21,10 @@ type Config struct {
 	Stats       func() (numSessions uint32, numHalfOpen uint32)
 }
 
+// Listener represents a hardened network listener.
 type Listener interface {
 	net.Listener
+	// Stats returns the total number of connections accepted and the number of connections served.
 	Stats() (total uint64, served uint64)
 }
 
@@ -78,7 +81,7 @@ func (l *listener) Stats() (accepted uint64, served uint64) {
 	return l.stats.Total.Load(), l.stats.Served.Load()
 }
 
-// Wrap the raw listener
+// Wrap the given net.Listener with hardened listener functionality.
 func Wrap(l net.Listener, c *Config) Listener {
 	return &listener{l: l, c: *c}
 }

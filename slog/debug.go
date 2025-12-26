@@ -12,7 +12,8 @@ import (
 	"github.com/mattn/go-runewidth"
 )
 
-func Checkf(cond bool, format string, v ...interface{}) {
+// Checkf checks the given condition and logs a fatal message if the condition is false.
+func Checkf(cond bool, format string, v ...any) {
 	if cond {
 		return
 	}
@@ -21,7 +22,8 @@ func Checkf(cond bool, format string, v ...interface{}) {
 	panic(s)
 }
 
-func Check(cond bool, v ...interface{}) {
+// Check checks the given condition and logs a fatal message if the condition is false.
+func Check(cond bool, v ...any) {
 	if cond {
 		return
 	}
@@ -110,7 +112,8 @@ func writeText(w io.Writer, txt string) error {
 	return nil
 }
 
-func Textf(level Level, txt string, format string, v ...interface{}) {
+// Textf logs a long text message at the given level.
+func Textf(level Level, txt string, format string, v ...any) {
 	if !CheckLevel(level) {
 		return
 	}
@@ -121,7 +124,8 @@ func Textf(level Level, txt string, format string, v ...interface{}) {
 	})
 }
 
-func Text(level Level, txt string, v ...interface{}) {
+// Text logs a long text message at the given level.
+func Text(level Level, txt string, v ...any) {
 	if !CheckLevel(level) {
 		return
 	}
@@ -165,7 +169,8 @@ func writeBinary(w io.Writer, bin []byte) error {
 	return nil
 }
 
-func Binaryf(level Level, bin []byte, format string, v ...interface{}) {
+// Binaryf logs binary data at the given level.
+func Binaryf(level Level, bin []byte, format string, v ...any) {
 	if !CheckLevel(level) {
 		return
 	}
@@ -176,7 +181,8 @@ func Binaryf(level Level, bin []byte, format string, v ...interface{}) {
 	})
 }
 
-func Binary(level Level, bin []byte, v ...interface{}) {
+// Binary logs binary data at the given level.
+func Binary(level Level, bin []byte, v ...any) {
 	if !CheckLevel(level) {
 		return
 	}
@@ -231,7 +237,8 @@ func writeStacktrace(w io.Writer, pc []uintptr) error {
 
 const stackMaxDepth = 256
 
-func Stackf(level Level, calldepth int, format string, v ...interface{}) {
+// Stackf logs a stack trace at the given level.
+func Stackf(level Level, calldepth int, format string, v ...any) {
 	if !CheckLevel(level) {
 		return
 	}
@@ -244,7 +251,8 @@ func Stackf(level Level, calldepth int, format string, v ...interface{}) {
 	})
 }
 
-func Stack(level Level, calldepth int, v ...interface{}) {
+// Stack logs a stack trace at the given level.
+func Stack(level Level, calldepth int, v ...any) {
 	if !CheckLevel(level) {
 		return
 	}

@@ -28,28 +28,32 @@ var levelChar = [...]byte{
 
 var std = NewLogger()
 
+// Default returns the default logger.
 func Default() *Logger {
 	return std
 }
 
+// Outputf is the low-level interface to write arbitary log messages.
 func Outputf(calldepth int, level Level, extra func(io.Writer) error, format string, v ...interface{}) error {
 	return std.output(calldepth+1, level, func(b []byte) []byte {
 		return fmt.Appendf(b, format, v...)
 	}, extra)
 }
 
+// Output is the low-level interface to write arbitary log messages.
 func Output(calldepth int, level Level, extra func(io.Writer) error, v ...interface{}) error {
 	return std.output(calldepth+1, level, func(b []byte) []byte {
 		return fmt.Append(b, v...)
 	}, extra)
 }
 
+// CheckLevel checks whether the given level is enabled.
 func CheckLevel(level Level) bool {
 	return level <= std.Level()
 }
 
-// Serious problems that are likely to cause the program to exit.
-func Fatalf(format string, v ...interface{}) {
+// Fatalf logs serious problems that are likely to cause the program to exit.
+func Fatalf(format string, v ...any) {
 	if !CheckLevel(LevelFatal) {
 		return
 	}
@@ -58,8 +62,8 @@ func Fatalf(format string, v ...interface{}) {
 	}, nil)
 }
 
-// Serious problems that are likely to cause the program to exit.
-func Fatal(v ...interface{}) {
+// Fatal logs serious problems that are likely to cause the program to exit.
+func Fatal(v ...any) {
 	if !CheckLevel(LevelFatal) {
 		return
 	}
@@ -68,8 +72,8 @@ func Fatal(v ...interface{}) {
 	}, nil)
 }
 
-// Issues that shouldn't be ignored.
-func Errorf(format string, v ...interface{}) {
+// Errorf logs issues that shouldn't be ignored.
+func Errorf(format string, v ...any) {
 	if !CheckLevel(LevelError) {
 		return
 	}
@@ -78,8 +82,8 @@ func Errorf(format string, v ...interface{}) {
 	}, nil)
 }
 
-// Issues that shouldn't be ignored.
-func Error(v ...interface{}) {
+// Error logs issues that shouldn't be ignored.
+func Error(v ...any) {
 	if !CheckLevel(LevelError) {
 		return
 	}
@@ -88,8 +92,8 @@ func Error(v ...interface{}) {
 	}, nil)
 }
 
-// Issues that may be ignored.
-func Warningf(format string, v ...interface{}) {
+// Warningf logs issues that may be ignored.
+func Warningf(format string, v ...any) {
 	if !CheckLevel(LevelWarning) {
 		return
 	}
@@ -98,8 +102,8 @@ func Warningf(format string, v ...interface{}) {
 	}, nil)
 }
 
-// Issues that may be ignored.
-func Warning(v ...interface{}) {
+// Warning logs issues that may be ignored.
+func Warning(v ...any) {
 	if !CheckLevel(LevelWarning) {
 		return
 	}
@@ -108,8 +112,8 @@ func Warning(v ...interface{}) {
 	}, nil)
 }
 
-// Important status changes. The prefix is 'I'.
-func Noticef(format string, v ...interface{}) {
+// Noticef logs important status changes. The prefix is 'I'.
+func Noticef(format string, v ...any) {
 	if !CheckLevel(LevelNotice) {
 		return
 	}
@@ -118,8 +122,8 @@ func Noticef(format string, v ...interface{}) {
 	}, nil)
 }
 
-// Important status changes. The prefix is 'I'.
-func Notice(v ...interface{}) {
+// Notice logs important status changes. The prefix is 'I'.
+func Notice(v ...any) {
 	if !CheckLevel(LevelNotice) {
 		return
 	}
@@ -128,8 +132,8 @@ func Notice(v ...interface{}) {
 	}, nil)
 }
 
-// Normal work reports.
-func Infof(format string, v ...interface{}) {
+// Infof logs normal work reports.
+func Infof(format string, v ...any) {
 	if !CheckLevel(LevelInfo) {
 		return
 	}
@@ -138,8 +142,8 @@ func Infof(format string, v ...interface{}) {
 	}, nil)
 }
 
-// Normal work reports.
-func Info(v ...interface{}) {
+// Info logs normal work reports.
+func Info(v ...any) {
 	if !CheckLevel(LevelInfo) {
 		return
 	}
@@ -148,8 +152,8 @@ func Info(v ...interface{}) {
 	}, nil)
 }
 
-// Extra information for debugging.
-func Debugf(format string, v ...interface{}) {
+// Debugf logs extra information for debugging.
+func Debugf(format string, v ...any) {
 	if !CheckLevel(LevelDebug) {
 		return
 	}
@@ -158,8 +162,8 @@ func Debugf(format string, v ...interface{}) {
 	}, nil)
 }
 
-// Extra information for debugging.
-func Debug(v ...interface{}) {
+// Debug logs extra information for debugging.
+func Debug(v ...any) {
 	if !CheckLevel(LevelDebug) {
 		return
 	}
@@ -168,8 +172,8 @@ func Debug(v ...interface{}) {
 	}, nil)
 }
 
-// Details for inspecting specific issues.
-func Verbosef(format string, v ...interface{}) {
+// Verbosef logs details for inspecting specific issues.
+func Verbosef(format string, v ...any) {
 	if !CheckLevel(LevelVerbose) {
 		return
 	}
@@ -178,8 +182,8 @@ func Verbosef(format string, v ...interface{}) {
 	}, nil)
 }
 
-// Details for inspecting specific issues.
-func Verbose(v ...interface{}) {
+// Verbose logs details for inspecting specific issues.
+func Verbose(v ...any) {
 	if !CheckLevel(LevelVerbose) {
 		return
 	}
@@ -188,8 +192,8 @@ func Verbose(v ...interface{}) {
 	}, nil)
 }
 
-// More details that may significantly impact performance. The prefix is 'V'.
-func VeryVerbosef(format string, v ...interface{}) {
+// VeryVerbosef logs more details that may significantly impact performance. The prefix is 'V'.
+func VeryVerbosef(format string, v ...any) {
 	if !CheckLevel(LevelVeryVerbose) {
 		return
 	}
@@ -198,8 +202,8 @@ func VeryVerbosef(format string, v ...interface{}) {
 	}, nil)
 }
 
-// More details that may significantly impact performance. The prefix is 'V'.
-func VeryVerbose(v ...interface{}) {
+// VeryVerbose logs more details that may significantly impact performance. The prefix is 'V'.
+func VeryVerbose(v ...any) {
 	if !CheckLevel(LevelVeryVerbose) {
 		return
 	}

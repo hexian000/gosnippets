@@ -10,6 +10,8 @@ import (
 	"os"
 )
 
+// Notify sends a notification message to the systemd init system.
+// It returns true if the notification was sent.
 func Notify(state string) (bool, error) {
 	addr := os.Getenv("NOTIFY_SOCKET")
 	if addr == "" {

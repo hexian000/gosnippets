@@ -13,6 +13,7 @@ import (
 	"time"
 )
 
+// Logger represents a logger instance.
 type Logger struct {
 	out        output
 	outMu      sync.Mutex
@@ -20,6 +21,7 @@ type Logger struct {
 	filePrefix atomic.Pointer[string]
 }
 
+// NewLogger creates and returns a new Logger instance.
 func NewLogger() *Logger {
 	return &Logger{
 		out: newDiscardWriter(),
@@ -34,7 +36,8 @@ const (
 	OutputSyslog
 )
 
-func (l *Logger) SetOutput(t OutputType, v ...interface{}) {
+// SetOutput sets the output type and parameters for the logger.
+func (l *Logger) SetOutput(t OutputType, v ...any) {
 	var w output
 	switch t {
 	case OutputDiscard:
@@ -74,31 +77,37 @@ func (l *Logger) output(calldepth int, level Level, appendMessage func([]byte) [
 	})
 }
 
+// Outputf is the low-level interface to write arbitary log messages.
 func (l *Logger) Outputf(calldepth int, level Level, extra func(io.Writer) error, format string, v ...interface{}) error {
 	return l.output(calldepth+1, level, func(b []byte) []byte {
 		return fmt.Appendf(b, format, v...)
 	}, extra)
 }
 
-func (l *Logger) Output(calldepth int, level Level, extra func(io.Writer) error, v ...interface{}) error {
+// Output is the low-level interface to write arbitary log messages.
+func (l *Logger) Output(calldepth int, level Level, extra func(io.Writer) error, v ...any) error {
 	return l.output(calldepth+1, level, func(b []byte) []byte {
 		return fmt.Append(b, v...)
 	}, extra)
 }
 
+// SetLevel sets the logging level for the logger.
 func (l *Logger) SetLevel(level Level) {
 	l.level.Store(int32(level))
 }
 
+// Level returns the current logging level of the logger.
 func (l *Logger) Level() Level {
 	return Level(l.level.Load())
 }
 
+// SetFilePrefix sets the file prefix to be stripped from file paths in log messages.
 func (l *Logger) SetFilePrefix(prefix string) {
 	l.filePrefix.Store(&prefix)
 }
 
-func (l *Logger) Fatalf(format string, v ...interface{}) {
+// Fatalf logs serious problems that are likely to cause the program to exit.
+func (l *Logger) Fatalf(format string, v ...any) {
 	if LevelFatal > l.Level() {
 		return
 	}
@@ -107,7 +116,8 @@ func (l *Logger) Fatalf(format string, v ...interface{}) {
 	}, nil)
 }
 
-func (l *Logger) Fatal(v ...interface{}) {
+// Fatal logs serious problems that are likely to cause the program to exit.
+func (l *Logger) Fatal(v ...any) {
 	if LevelFatal > l.Level() {
 		return
 	}
@@ -116,7 +126,8 @@ func (l *Logger) Fatal(v ...interface{}) {
 	}, nil)
 }
 
-func (l *Logger) Errorf(format string, v ...interface{}) {
+// Errorf logs issues that shouldn't be ignored.
+func (l *Logger) Errorf(format string, v ...any) {
 	if LevelError > l.Level() {
 		return
 	}
@@ -125,7 +136,8 @@ func (l *Logger) Errorf(format string, v ...interface{}) {
 	}, nil)
 }
 
-func (l *Logger) Error(v ...interface{}) {
+// Error logs issues that shouldn't be ignored.
+func (l *Logger) Error(v ...any) {
 	if LevelError > l.Level() {
 		return
 	}
@@ -134,7 +146,8 @@ func (l *Logger) Error(v ...interface{}) {
 	}, nil)
 }
 
-func (l *Logger) Warningf(format string, v ...interface{}) {
+// Warningf logs issues that may be ignored.
+func (l *Logger) Warningf(format string, v ...any) {
 	if LevelWarning > l.Level() {
 		return
 	}
@@ -143,7 +156,8 @@ func (l *Logger) Warningf(format string, v ...interface{}) {
 	}, nil)
 }
 
-func (l *Logger) Warning(v ...interface{}) {
+// Warning logs issues that may be ignored.
+func (l *Logger) Warning(v ...any) {
 	if LevelWarning > l.Level() {
 		return
 	}
@@ -152,7 +166,8 @@ func (l *Logger) Warning(v ...interface{}) {
 	}, nil)
 }
 
-func (l *Logger) Noticef(format string, v ...interface{}) {
+// Noticef logs important status changes. The prefix is 'I'.
+func (l *Logger) Noticef(format string, v ...any) {
 	if LevelNotice > l.Level() {
 		return
 	}
@@ -161,7 +176,8 @@ func (l *Logger) Noticef(format string, v ...interface{}) {
 	}, nil)
 }
 
-func (l *Logger) Notice(v ...interface{}) {
+// Notice logs important status changes. The prefix is 'I'.
+func (l *Logger) Notice(v ...any) {
 	if LevelNotice > l.Level() {
 		return
 	}
@@ -170,7 +186,8 @@ func (l *Logger) Notice(v ...interface{}) {
 	}, nil)
 }
 
-func (l *Logger) Infof(format string, v ...interface{}) {
+// Infof logs normal work reports.
+func (l *Logger) Infof(format string, v ...any) {
 	if LevelInfo > l.Level() {
 		return
 	}
@@ -179,7 +196,8 @@ func (l *Logger) Infof(format string, v ...interface{}) {
 	}, nil)
 }
 
-func (l *Logger) Info(v ...interface{}) {
+// Info logs normal work reports.
+func (l *Logger) Info(v ...any) {
 	if LevelInfo > l.Level() {
 		return
 	}
@@ -188,7 +206,8 @@ func (l *Logger) Info(v ...interface{}) {
 	}, nil)
 }
 
-func (l *Logger) Debugf(format string, v ...interface{}) {
+// Debugf logs extra information for debugging.
+func (l *Logger) Debugf(format string, v ...any) {
 	if LevelDebug > l.Level() {
 		return
 	}
@@ -197,7 +216,8 @@ func (l *Logger) Debugf(format string, v ...interface{}) {
 	}, nil)
 }
 
-func (l *Logger) Debug(v ...interface{}) {
+// Debug logs extra information for debugging.
+func (l *Logger) Debug(v ...any) {
 	if LevelDebug > l.Level() {
 		return
 	}
@@ -206,7 +226,8 @@ func (l *Logger) Debug(v ...interface{}) {
 	}, nil)
 }
 
-func (l *Logger) Verbosef(format string, v ...interface{}) {
+// Verbosef logs details for inspecting specific issues.
+func (l *Logger) Verbosef(format string, v ...any) {
 	if LevelVerbose > l.Level() {
 		return
 	}
@@ -215,7 +236,8 @@ func (l *Logger) Verbosef(format string, v ...interface{}) {
 	}, nil)
 }
 
-func (l *Logger) Verbose(v ...interface{}) {
+// Verbose logs details for inspecting specific issues.
+func (l *Logger) Verbose(v ...any) {
 	if LevelVerbose > l.Level() {
 		return
 	}
@@ -224,7 +246,8 @@ func (l *Logger) Verbose(v ...interface{}) {
 	}, nil)
 }
 
-func (l *Logger) VeryVerbosef(format string, v ...interface{}) {
+// VeryVerbosef logs more details that may significantly impact performance. The prefix is 'V'.
+func (l *Logger) VeryVerbosef(format string, v ...any) {
 	if LevelVeryVerbose > l.Level() {
 		return
 	}
@@ -233,7 +256,8 @@ func (l *Logger) VeryVerbosef(format string, v ...interface{}) {
 	}, nil)
 }
 
-func (l *Logger) VeryVerbose(v ...interface{}) {
+// VeryVerbose logs more details that may significantly impact performance. The prefix is 'V'.
+func (l *Logger) VeryVerbose(v ...any) {
 	if LevelVeryVerbose > l.Level() {
 		return
 	}

@@ -43,6 +43,7 @@ var siPrefixNeg = [...]string{
 	"m", "μ", "n", "p", "f", "a", "z", "y", "r", "q",
 }
 
+// SIPrefix formats the value with SI prefixes
 func SIPrefix(value float64) string {
 	if !isNormal(value) {
 		return formatAbnormal(value)
@@ -77,6 +78,7 @@ var iecUnits = [...]string{
 	"B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB",
 }
 
+// IECBytes formats the value in bytes with IEC binary prefixes
 func IECBytes(value float64) string {
 	if !isNormal(value) {
 		return formatAbnormal(value)
@@ -99,7 +101,7 @@ func IECBytes(value float64) string {
 	return fmt.Sprintf("%.0f%s", v, iecUnits[e])
 }
 
-// DurationSeconds formats the truncated duration
+// DurationSeconds formats the duration truncated to seconds
 func DurationSeconds(d time.Duration) string {
 	sign := ""
 	if d < 0 {
@@ -123,7 +125,7 @@ func DurationSeconds(d time.Duration) string {
 	return fmt.Sprintf("%s%d:%02d", sign, minute, second)
 }
 
-// DurationMillis formats the truncated duration
+// DurationMillis formats the duration truncated to milliseconds
 func DurationMillis(d time.Duration) string {
 	sign := ""
 	if d < 0 {
