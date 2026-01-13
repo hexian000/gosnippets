@@ -1,4 +1,4 @@
-// gosnippets (c) 2023-2025 He Xian <hexian000@outlook.com>
+// gosnippets (c) 2023-2026 He Xian <hexian000@outlook.com>
 // This code is licensed under MIT license (see LICENSE for details)
 
 package formats
@@ -49,7 +49,7 @@ func SIPrefix(value float64) string {
 		return formatAbnormal(value)
 	}
 	absvalue := math.Abs(value)
-	if !(1e-30 < absvalue && absvalue < 1e+31) {
+	if !(1e-30 <= absvalue && absvalue < 1e+31) {
 		return fmt.Sprintf("%.2e", value)
 	}
 	e := int(math.Floor(math.Log10(absvalue) / 3.0))
@@ -83,10 +83,12 @@ func IECBytes(value float64) string {
 	if !isNormal(value) {
 		return formatAbnormal(value)
 	}
-	e := (int(math.Log2(math.Abs(value))) - 1) / 10
-	if e < 0 {
-		e = 0
-	} else if e >= len(iecUnits) {
+	absvalue := math.Abs(value)
+	e := 0
+	if absvalue >= 1.0 {
+		e = (int(math.Log2(absvalue)) - 1) / 10
+	}
+	if e >= len(iecUnits) {
 		e = len(iecUnits) - 1
 	}
 	v := math.Ldexp(value, e*-10)

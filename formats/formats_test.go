@@ -1,11 +1,13 @@
-// gosnippets (c) 2023-2025 He Xian <hexian000@outlook.com>
+// gosnippets (c) 2023-2026 He Xian <hexian000@outlook.com>
 // This code is licensed under MIT license (see LICENSE for details)
 
 package formats_test
 
 import (
+	"errors"
 	"fmt"
 	"math"
+	"net"
 	"testing"
 	"time"
 
@@ -73,6 +75,31 @@ func TestSIPrefix(t *testing.T) {
 	}
 }
 
+func TestSIPrefixNegative(t *testing.T) {
+	m := -2.0 / 3.0
+	cases := [...]struct {
+		in float64
+		s  string
+	}{
+		{1e+01 * m, "-6.67"}, {1e+02 * m, "-66.7"},
+		{1e+03 * m, "-667"}, {1e+04 * m, "-6.67k"},
+		{1e+05 * m, "-66.7k"}, {1e+06 * m, "-667k"},
+		{1e+07 * m, "-6.67M"}, {1e+08 * m, "-66.7M"},
+		{1e+09 * m, "-667M"}, {1e+10 * m, "-6.67G"},
+		{1e-01 * m, "-66.7m"}, {1e-02 * m, "-6.67m"},
+		{1e-03 * m, "-667μ"}, {1e-04 * m, "-66.7μ"},
+		{1e-05 * m, "-6.67μ"}, {1e-06 * m, "-667n"},
+	}
+	for _, c := range cases {
+		value := c.in
+		result := formats.SIPrefix(value)
+		if result != c.s {
+			t.Fatalf("expect \"%s\", got \"%s\"", c.s, result)
+		}
+		fmt.Printf("|%16e|%16s|\n", value, result)
+	}
+}
+
 func TestIECBytes(t *testing.T) {
 	zero := 0.0
 	cases := [...]struct {
@@ -100,6 +127,26 @@ func TestIECBytes(t *testing.T) {
 		}
 		fmt.Printf("|%16e|%16s|\n", value, result)
 		// fmt.Printf("{%.0e, \"%s\"},\n", value, result)
+	}
+}
+
+func TestIECBytesSmallValues(t *testing.T) {
+	cases := [...]struct {
+		in float64
+		s  string
+	}{
+		{0.1, "0B"}, {0.5, "0B"}, {0.9, "1B"},
+		{-1, "-1B"}, {-10, "-10B"}, {-100, "-100B"},
+		{-1024, "-1024B"}, {-1048576, "-1024KiB"},
+		{-2048, "-2.00KiB"}, {-2097152, "-2.00MiB"},
+	}
+	for _, c := range cases {
+		value := c.in
+		result := formats.IECBytes(value)
+		if result != c.s {
+			t.Fatalf("expect \"%s\", got \"%s\"", c.s, result)
+		}
+		fmt.Printf("|%16e|%16s|\n", value, result)
 	}
 }
 
@@ -195,5 +242,34 @@ func TestDuration(t *testing.T) {
 		fmt.Printf("|%16s|%20s|%26s|%16s|\n", secs, millis, nanos, human)
 		// fmt.Printf("{%d, \"%s\", \"%s\", \"%s\", \"%s\"},\n", c.in,
 		// 	secs, millis, nanos, human)
+	}
+}
+
+func TestError(t *testing.T) {
+	cases := []struct {
+		in  error
+		out string
+	}{
+		{nil, "nil"},
+		{errors.New("simple error"), "simple error"},
+		{fmt.Errorf("formatted error: %d", 42), "formatted error: 42"},
+		{&net.OpError{Op: "read", Net: "tcp", Err: errors.New("connection reset")}, "(*net.OpError) read tcp: connection reset"},
+	}
+	for _, c := range cases {
+		result := formats.Error(c.in)
+		if result != c.out {
+			t.Fatalf("expect \"%s\", got \"%s\"", c.out, result)
+		}
+		fmt.Printf("|%40v|%60s|\n", c.in, result)
+	}
+}
+
+func TestErrorWrapped(t *testing.T) {
+	innerErr := errors.New("inner error")
+	wrappedErr := fmt.Errorf("wrapped: %w", innerErr)
+	result := formats.Error(wrappedErr)
+	expected := "(*fmt.wrapError) wrapped: inner error"
+	if result != expected {
+		t.Fatalf("expect \"%s\", got \"%s\"", expected, result)
 	}
 }

@@ -1,4 +1,4 @@
-// gosnippets (c) 2023-2025 He Xian <hexian000@outlook.com>
+// gosnippets (c) 2023-2026 He Xian <hexian000@outlook.com>
 // This code is licensed under MIT license (see LICENSE for details)
 
 package slog
@@ -77,7 +77,7 @@ func (l *Logger) output(calldepth int, level Level, appendMessage func([]byte) [
 	})
 }
 
-// Outputf is the low-level interface to write arbitary log messages.
+// Outputf is the low-level interface to write arbitrary log messages.
 func (l *Logger) Outputf(calldepth int, level Level, extra func(io.Writer) error, format string, v ...interface{}) error {
 	return l.output(calldepth+1, level, func(b []byte) []byte {
 		return fmt.Appendf(b, format, v...)
