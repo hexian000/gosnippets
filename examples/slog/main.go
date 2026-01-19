@@ -9,7 +9,7 @@ import (
 
 func init() {
 	std := slog.Default()
-	std.SetOutput(slog.OutputWriter, os.Stdout)
+	std.SetOutput(slog.OutputTerminal, os.Stdout)
 	std.SetLevel(slog.LevelVerbose)
 	if dir, err := os.Getwd(); err == nil {
 		std.SetFilePrefix(dir + "/")

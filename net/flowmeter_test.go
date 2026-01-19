@@ -130,7 +130,7 @@ func TestFlowMeter_MultipleOperations(t *testing.T) {
 	// Multiple writes
 	data1 := []byte("First write")
 	data2 := []byte("Second write")
-	
+
 	n1, err := conn.Write(data1)
 	if err != nil {
 		t.Fatalf("Write() error = %v", err)
@@ -255,7 +255,7 @@ func TestFlowMeter_NilStats(t *testing.T) {
 
 func TestFlowStats_InitialValues(t *testing.T) {
 	stats := &FlowStats{}
-	
+
 	if got := stats.Read.Load(); got != 0 {
 		t.Errorf("FlowStats.Read initial value = %d, want 0", got)
 	}
@@ -269,7 +269,7 @@ func BenchmarkFlowMeter_Read(b *testing.B) {
 	mock := newMockConn()
 	stats := &FlowStats{}
 	conn := FlowMeter(mock, stats)
-	
+
 	data := bytes.Repeat([]byte("x"), 1024)
 	buf := make([]byte, 1024)
 
@@ -284,7 +284,7 @@ func BenchmarkFlowMeter_Write(b *testing.B) {
 	mock := newMockConn()
 	stats := &FlowStats{}
 	conn := FlowMeter(mock, stats)
-	
+
 	data := bytes.Repeat([]byte("x"), 1024)
 
 	b.ResetTimer()

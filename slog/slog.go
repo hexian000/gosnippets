@@ -25,6 +25,10 @@ var levelChar = [...]byte{
 	'-', 'F', 'E', 'W', 'I', 'I', 'D', 'V', 'V',
 }
 
+var levelColor = [...]string{
+	";96m", ";97;41m", ";91m", ";93m", ";92m", ";92m", ";96m", ";97m", ";37m",
+}
+
 var std = NewLogger()
 
 // Default returns the default logger.

@@ -33,6 +33,7 @@ type OutputType int
 
 const (
 	OutputDiscard OutputType = iota
+	OutputTerminal
 	OutputWriter
 	OutputSyslog
 )
@@ -43,6 +44,8 @@ func (l *Logger) SetOutput(t OutputType, v ...any) {
 	switch t {
 	case OutputDiscard:
 		w = newDiscardWriter()
+	case OutputTerminal:
+		w = newTermWriter(v[0].(io.Writer))
 	case OutputWriter:
 		w = newTextWriter(v[0].(io.Writer))
 	case OutputSyslog:
