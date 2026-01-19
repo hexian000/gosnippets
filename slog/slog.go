@@ -26,7 +26,7 @@ var levelChar = [...]byte{
 }
 
 var levelColor = [...]string{
-	";96m", ";97;41m", ";91m", ";93m", ";92m", ";92m", ";96m", ";97m", ";37m",
+	";96", ";97;41", ";91", ";93", ";92", ";92", ";96", ";97", ";37",
 }
 
 var std = NewLogger()
@@ -36,15 +36,15 @@ func Default() *Logger {
 	return std
 }
 
-// Outputf is the low-level interface to write arbitary log messages.
-func Outputf(calldepth int, level Level, extra func(io.Writer) error, format string, v ...interface{}) error {
+// Printf is the low-level interface to write arbitary log messages.
+func Printf(calldepth int, level Level, extra func(io.Writer) error, format string, v ...any) error {
 	return std.output(calldepth+1, level, func(b []byte) []byte {
 		return AppendMsgf(b, format, v...)
 	}, extra)
 }
 
-// Output is the low-level interface to write arbitary log messages.
-func Output(calldepth int, level Level, extra func(io.Writer) error, v ...interface{}) error {
+// Println is the low-level interface to write arbitary log messages.
+func Println(calldepth int, level Level, extra func(io.Writer) error, v ...any) error {
 	return std.output(calldepth+1, level, func(b []byte) []byte {
 		return AppendMsg(b, v...)
 	}, extra)

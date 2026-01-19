@@ -48,7 +48,7 @@ func main() {
 	slog.Textf(slog.LevelDebug, s, "wa")
 	slog.Binaryf(slog.LevelWarning, []byte(s), "wa")
 	testStackInlined()
-	slog.Output(0, slog.LevelDebug, nil, "test1")
-	slog.Default().Output(0, slog.LevelDebug, nil, "test2")
+	slog.Println(0, slog.LevelDebug, nil, "test1")
+	slog.Default().Println(0, slog.LevelDebug, nil, "test2")
 	slog.Debug("end")
 }

@@ -74,7 +74,7 @@ func (w *termWriter) WriteMsg(m *message) error {
 	buf := make([]byte, 0, bufSize)
 	buf = append(buf, "\x1b["...) // ESC [
 	buf = append(buf, levelColor[m.level]...)
-	buf = append(buf, levelChar[m.level], ' ')
+	buf = append(buf, 'm', levelChar[m.level], ' ')
 	buf = m.timestamp.AppendFormat(buf, TimeLayout)
 	buf = append(buf, ' ')
 	buf = append(buf, m.file...)
@@ -82,8 +82,7 @@ func (w *termWriter) WriteMsg(m *message) error {
 	buf = strconv.AppendInt(buf, int64(m.line), 10)
 	buf = append(buf, ' ')
 	buf = m.appendMsg(buf)
-	buf = append(buf, "\x1b[0m"...)
-	buf = append(buf, '\n')
+	buf = append(buf, "\x1b[0m\n"...)
 	if _, err := w.out.Write(buf); err != nil {
 		return err
 	}

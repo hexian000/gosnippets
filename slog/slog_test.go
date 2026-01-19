@@ -246,7 +246,7 @@ func TestOutputWithExtra(t *testing.T) {
 	logger.SetLevel(slog.LevelDebug)
 
 	extraData := "extra data line\n"
-	logger.Output(0, slog.LevelDebug, func(w io.Writer) error {
+	logger.Println(0, slog.LevelDebug, func(w io.Writer) error {
 		_, err := w.Write([]byte(extraData))
 		return err
 	}, "main message")
@@ -500,7 +500,7 @@ func TestOutputf(t *testing.T) {
 	slog.Default().SetOutput(slog.OutputWriter, &buf)
 	slog.Default().SetLevel(slog.LevelDebug)
 
-	slog.Outputf(0, slog.LevelDebug, nil, "outputf %d %s", 42, "test")
+	slog.Printf(0, slog.LevelDebug, nil, "outputf %d %s", 42, "test")
 
 	output := buf.String()
 	if !strings.Contains(output, "outputf 42 test") {
@@ -514,7 +514,7 @@ func TestLoggerOutputf(t *testing.T) {
 	logger.SetOutput(slog.OutputWriter, &buf)
 	logger.SetLevel(slog.LevelDebug)
 
-	logger.Outputf(0, slog.LevelDebug, nil, "logger outputf %d", 99)
+	logger.Printf(0, slog.LevelDebug, nil, "logger outputf %d", 99)
 
 	output := buf.String()
 	if !strings.Contains(output, "logger outputf 99") {
@@ -525,13 +525,13 @@ func TestLoggerOutputf(t *testing.T) {
 func BenchmarkOutput(b *testing.B) {
 	testData := "The quick brown fox jumps over the lazy dog.🍌 "
 	for i := 1; i < b.N; i++ {
-		slog.Output(0, slog.LevelFatal, nil, testData)
+		slog.Println(0, slog.LevelFatal, nil, testData)
 	}
 }
 
 func BenchmarkOutputf(b *testing.B) {
 	for i := 1; i < b.N; i++ {
-		slog.Outputf(0, slog.LevelFatal, nil, "test %d %s", 42, "hello")
+		slog.Printf(0, slog.LevelFatal, nil, "test %d %s", 42, "hello")
 	}
 }
 
@@ -546,7 +546,7 @@ func BenchmarkLevelFiltered(b *testing.B) {
 func BenchmarkConcurrent(b *testing.B) {
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			slog.Output(0, slog.LevelFatal, nil, "concurrent test")
+			slog.Println(0, slog.LevelFatal, nil, "concurrent test")
 		}
 	})
 }

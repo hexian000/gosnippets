@@ -98,15 +98,15 @@ func AppendMsg(b []byte, v ...any) []byte {
 	return buf.Bytes()
 }
 
-// Outputf is the low-level interface to write arbitrary log messages.
-func (l *Logger) Outputf(calldepth int, level Level, extra func(io.Writer) error, format string, v ...any) error {
+// Printf is the low-level interface to write arbitrary log messages.
+func (l *Logger) Printf(calldepth int, level Level, extra func(io.Writer) error, format string, v ...any) error {
 	return l.output(calldepth+1, level, func(b []byte) []byte {
 		return AppendMsgf(b, format, v...)
 	}, extra)
 }
 
-// Output is the low-level interface to write arbitary log messages.
-func (l *Logger) Output(calldepth int, level Level, extra func(io.Writer) error, v ...any) error {
+// Println is the low-level interface to write arbitary log messages.
+func (l *Logger) Println(calldepth int, level Level, extra func(io.Writer) error, v ...any) error {
 	return l.output(calldepth+1, level, func(b []byte) []byte {
 		return AppendMsg(b, v...)
 	}, extra)

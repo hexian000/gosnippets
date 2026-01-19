@@ -12,7 +12,7 @@ type wrapper struct {
 
 func (w *wrapper) Write(p []byte) (n int, err error) {
 	const calldepth = 4
-	w.l.Output(calldepth, w.level, nil, string(p))
+	w.l.Println(calldepth, w.level, nil, string(p))
 	return len(p), nil
 }
 
