@@ -55,6 +55,20 @@ func CheckLevel(level Level) bool {
 	return level <= std.Level()
 }
 
+// Temporaryf prints debug message regardless of log level.
+func Temporaryf(format string, v ...any) {
+	std.output(1, LevelSilence, func(b []byte) []byte {
+		return AppendMsgf(b, format, v...)
+	}, nil)
+}
+
+// Temporary prints debug message regardless of log level.
+func Temporary(v ...any) {
+	std.output(1, LevelSilence, func(b []byte) []byte {
+		return AppendMsg(b, v...)
+	}, nil)
+}
+
 // Fatalf logs serious problems that are likely to cause the program to exit.
 func Fatalf(format string, v ...any) {
 	if !CheckLevel(LevelFatal) {

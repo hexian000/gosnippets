@@ -127,6 +127,20 @@ func (l *Logger) SetFilePrefix(prefix string) {
 	l.filePrefix.Store(&prefix)
 }
 
+// Temporaryf prints debug message regardless of log level.
+func (l *Logger) Temporaryf(format string, v ...any) {
+	l.output(1, LevelSilence, func(b []byte) []byte {
+		return AppendMsgf(b, format, v...)
+	}, nil)
+}
+
+// Temporary prints debug message regardless of log level.
+func (l *Logger) Temporary(v ...any) {
+	l.output(1, LevelSilence, func(b []byte) []byte {
+		return AppendMsg(b, v...)
+	}, nil)
+}
+
 // Fatalf logs serious problems that are likely to cause the program to exit.
 func (l *Logger) Fatalf(format string, v ...any) {
 	if LevelFatal > l.Level() {
