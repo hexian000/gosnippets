@@ -60,7 +60,7 @@ func (l *Logger) SetOutput(t OutputType, v ...any) {
 	l.out = w
 }
 
-func (l *Logger) output(calldepth int, level Level, appendMessage func([]byte) []byte, writeExtra func(io.Writer) error) error {
+func (l *Logger) output(calldepth int, level Level, appendMsg func([]byte) []byte, writeExtra func(io.Writer) error) error {
 	now := time.Now()
 	_, file, line, ok := runtime.Caller(calldepth + 1)
 	if !ok {
@@ -71,13 +71,13 @@ func (l *Logger) output(calldepth int, level Level, appendMessage func([]byte) [
 
 	l.outMu.Lock()
 	defer l.outMu.Unlock()
-	return l.out.Write(&message{
-		timestamp:     now,
-		level:         level,
-		file:          file,
-		line:          line,
-		appendMessage: appendMessage,
-		writeExtra:    writeExtra,
+	return l.out.WriteMsg(&message{
+		timestamp:  now,
+		level:      level,
+		file:       file,
+		line:       line,
+		appendMsg:  appendMsg,
+		writeExtra: writeExtra,
 	})
 }
 

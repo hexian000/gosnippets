@@ -37,13 +37,13 @@ var priorityMap = [...]func(*syslog.Writer, string) error{
 	(*syslog.Writer).Debug,
 }
 
-func (s *syslogWriter) Write(m *message) error {
+func (s *syslogWriter) WriteMsg(m *message) error {
 	buf := make([]byte, 0, bufSize)
 	buf = append(buf, levelChar[m.level], ' ')
 	buf = append(buf, m.file...)
 	buf = append(buf, ':')
 	buf = strconv.AppendInt(buf, int64(m.line), 10)
 	buf = append(buf, ' ')
-	buf = m.appendMessage(buf)
+	buf = m.appendMsg(buf)
 	return priorityMap[m.level](s.out, string(buf))
 }

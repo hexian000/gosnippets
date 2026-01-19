@@ -2,6 +2,8 @@ package main
 
 import (
 	"os"
+	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/hexian000/gosnippets/slog"
@@ -11,8 +13,8 @@ func init() {
 	std := slog.Default()
 	std.SetOutput(slog.OutputTerminal, os.Stdout)
 	std.SetLevel(slog.LevelVeryVerbose)
-	if dir, err := os.Getwd(); err == nil {
-		std.SetFilePrefix(dir + "/")
+	if _, file, _, ok := runtime.Caller(0); ok {
+		std.SetFilePrefix(filepath.Dir(file) + "/")
 	}
 	slog.Debug("slog initialized")
 }

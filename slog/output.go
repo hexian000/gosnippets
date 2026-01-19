@@ -12,75 +12,43 @@ import (
 var newSyslogWriter func(string) output
 
 type message struct {
-	timestamp     time.Time
-	level         Level
-	file          string
-	line          int
-	appendMessage func([]byte) []byte
-	writeExtra    func(io.Writer) error
+	timestamp  time.Time
+	level      Level
+	file       string
+	line       int
+	appendMsg  func([]byte) []byte
+	writeExtra func(io.Writer) error
 }
 
 type output interface {
-	Write(m *message) error
+	WriteMsg(m *message) error
 }
 
 const bufSize = 4096
 
 type discardWriter struct{}
 
-func newDiscardWriter() output {
-	return &discardWriter{}
-}
-
-func (w *discardWriter) Write(*message) error {
-	return nil
-}
-
-type flusher interface {
-	Flush() error
-}
+func (w *discardWriter) WriteMsg(*message) error { return nil }
+func newDiscardWriter() output                   { return &discardWriter{} }
 
 type textWriter struct {
-	out   io.Writer
-	flush func() error
+	out WriteFlusher
 }
 
 func newTextWriter(out io.Writer) output {
-	flush := func() error {
-		return nil
-	}
-	if f, ok := out.(flusher); ok {
-		flush = func() error {
-			return f.Flush()
-		}
-	}
-	return &textWriter{
-		out:   out,
-		flush: flush,
-	}
+	return &textWriter{out: NewWriteFlusher(out)}
 }
 
 type termWriter textWriter
 
 func newTermWriter(out io.Writer) output {
-	flush := func() error {
-		return nil
-	}
-	if f, ok := out.(flusher); ok {
-		flush = func() error {
-			return f.Flush()
-		}
-	}
-	return &termWriter{
-		out:   out,
-		flush: flush,
-	}
+	return &termWriter{out: NewWriteFlusher(out)}
 }
 
 /* TimeLayout is a fixed-length layout conforming to both ISO 8601 and RFC 3339 */
 const TimeLayout = "2006-01-02T15:04:05-07:00"
 
-func (w *textWriter) Write(m *message) error {
+func (w *textWriter) WriteMsg(m *message) error {
 	buf := make([]byte, 0, bufSize)
 	buf = append(buf, levelChar[m.level], ' ')
 	buf = m.timestamp.AppendFormat(buf, TimeLayout)
@@ -89,7 +57,7 @@ func (w *textWriter) Write(m *message) error {
 	buf = append(buf, ':')
 	buf = strconv.AppendInt(buf, int64(m.line), 10)
 	buf = append(buf, ' ')
-	buf = m.appendMessage(buf)
+	buf = m.appendMsg(buf)
 	buf = append(buf, '\n')
 	if _, err := w.out.Write(buf); err != nil {
 		return err
@@ -99,10 +67,10 @@ func (w *textWriter) Write(m *message) error {
 			return err
 		}
 	}
-	return w.flush()
+	return w.out.Flush()
 }
 
-func (w *termWriter) Write(m *message) error {
+func (w *termWriter) WriteMsg(m *message) error {
 	buf := make([]byte, 0, bufSize)
 	buf = append(buf, "\x1b["...) // ESC [
 	buf = append(buf, levelColor[m.level]...)
@@ -113,7 +81,7 @@ func (w *termWriter) Write(m *message) error {
 	buf = append(buf, ':')
 	buf = strconv.AppendInt(buf, int64(m.line), 10)
 	buf = append(buf, ' ')
-	buf = m.appendMessage(buf)
+	buf = m.appendMsg(buf)
 	buf = append(buf, "\x1b[0m"...)
 	buf = append(buf, '\n')
 	if _, err := w.out.Write(buf); err != nil {
@@ -124,5 +92,5 @@ func (w *termWriter) Write(m *message) error {
 			return err
 		}
 	}
-	return w.flush()
+	return w.out.Flush()
 }

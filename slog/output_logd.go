@@ -43,7 +43,7 @@ var levelMap = [...]byte{
 	LevelVeryVerbose: 2, /* ANDROID_LOG_VERBOSE */
 }
 
-func (l *logdWriter) Write(m *message) error {
+func (l *logdWriter) WriteMsg(m *message) error {
 	buf := make([]byte, 11, bufSize)
 	buf[0] = 0 // LOG_ID_MAIN
 	le := binary.LittleEndian
@@ -61,7 +61,7 @@ func (l *logdWriter) Write(m *message) error {
 	buf = append(buf, ':')
 	buf = strconv.AppendInt(buf, int64(m.line), 10)
 	buf = append(buf, ' ')
-	buf = m.appendMessage(buf)
+	buf = m.appendMsg(buf)
 	buf = append(buf, 0)
 	_, err := l.out.Write(buf)
 	return err
