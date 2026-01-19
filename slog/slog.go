@@ -4,7 +4,6 @@
 package slog
 
 import (
-	"fmt"
 	"io"
 )
 
@@ -36,14 +35,14 @@ func Default() *Logger {
 // Outputf is the low-level interface to write arbitary log messages.
 func Outputf(calldepth int, level Level, extra func(io.Writer) error, format string, v ...interface{}) error {
 	return std.output(calldepth+1, level, func(b []byte) []byte {
-		return fmt.Appendf(b, format, v...)
+		return AppendMsgf(b, format, v...)
 	}, extra)
 }
 
 // Output is the low-level interface to write arbitary log messages.
 func Output(calldepth int, level Level, extra func(io.Writer) error, v ...interface{}) error {
 	return std.output(calldepth+1, level, func(b []byte) []byte {
-		return fmt.Append(b, v...)
+		return AppendMsg(b, v...)
 	}, extra)
 }
 
@@ -58,7 +57,7 @@ func Fatalf(format string, v ...any) {
 		return
 	}
 	std.output(1, LevelFatal, func(b []byte) []byte {
-		return fmt.Appendf(b, format, v...)
+		return AppendMsgf(b, format, v...)
 	}, nil)
 }
 
@@ -68,7 +67,7 @@ func Fatal(v ...any) {
 		return
 	}
 	std.output(1, LevelFatal, func(b []byte) []byte {
-		return fmt.Append(b, v...)
+		return AppendMsg(b, v...)
 	}, nil)
 }
 
@@ -78,7 +77,7 @@ func Errorf(format string, v ...any) {
 		return
 	}
 	std.output(1, LevelError, func(b []byte) []byte {
-		return fmt.Appendf(b, format, v...)
+		return AppendMsgf(b, format, v...)
 	}, nil)
 }
 
@@ -88,7 +87,7 @@ func Error(v ...any) {
 		return
 	}
 	std.output(1, LevelError, func(b []byte) []byte {
-		return fmt.Append(b, v...)
+		return AppendMsg(b, v...)
 	}, nil)
 }
 
@@ -98,7 +97,7 @@ func Warningf(format string, v ...any) {
 		return
 	}
 	std.output(1, LevelWarning, func(b []byte) []byte {
-		return fmt.Appendf(b, format, v...)
+		return AppendMsgf(b, format, v...)
 	}, nil)
 }
 
@@ -108,7 +107,7 @@ func Warning(v ...any) {
 		return
 	}
 	std.output(1, LevelWarning, func(b []byte) []byte {
-		return fmt.Append(b, v...)
+		return AppendMsg(b, v...)
 	}, nil)
 }
 
@@ -118,7 +117,7 @@ func Noticef(format string, v ...any) {
 		return
 	}
 	std.output(1, LevelNotice, func(b []byte) []byte {
-		return fmt.Appendf(b, format, v...)
+		return AppendMsgf(b, format, v...)
 	}, nil)
 }
 
@@ -128,7 +127,7 @@ func Notice(v ...any) {
 		return
 	}
 	std.output(1, LevelNotice, func(b []byte) []byte {
-		return fmt.Append(b, v...)
+		return AppendMsg(b, v...)
 	}, nil)
 }
 
@@ -138,7 +137,7 @@ func Infof(format string, v ...any) {
 		return
 	}
 	std.output(1, LevelInfo, func(b []byte) []byte {
-		return fmt.Appendf(b, format, v...)
+		return AppendMsgf(b, format, v...)
 	}, nil)
 }
 
@@ -148,7 +147,7 @@ func Info(v ...any) {
 		return
 	}
 	std.output(1, LevelInfo, func(b []byte) []byte {
-		return fmt.Append(b, v...)
+		return AppendMsg(b, v...)
 	}, nil)
 }
 
@@ -158,7 +157,7 @@ func Debugf(format string, v ...any) {
 		return
 	}
 	std.output(1, LevelDebug, func(b []byte) []byte {
-		return fmt.Appendf(b, format, v...)
+		return AppendMsgf(b, format, v...)
 	}, nil)
 }
 
@@ -168,7 +167,7 @@ func Debug(v ...any) {
 		return
 	}
 	std.output(1, LevelDebug, func(b []byte) []byte {
-		return fmt.Append(b, v...)
+		return AppendMsg(b, v...)
 	}, nil)
 }
 
@@ -178,7 +177,7 @@ func Verbosef(format string, v ...any) {
 		return
 	}
 	std.output(1, LevelVerbose, func(b []byte) []byte {
-		return fmt.Appendf(b, format, v...)
+		return AppendMsgf(b, format, v...)
 	}, nil)
 }
 
@@ -188,7 +187,7 @@ func Verbose(v ...any) {
 		return
 	}
 	std.output(1, LevelVerbose, func(b []byte) []byte {
-		return fmt.Append(b, v...)
+		return AppendMsg(b, v...)
 	}, nil)
 }
 
@@ -198,7 +197,7 @@ func VeryVerbosef(format string, v ...any) {
 		return
 	}
 	std.output(1, LevelVeryVerbose, func(b []byte) []byte {
-		return fmt.Appendf(b, format, v...)
+		return AppendMsgf(b, format, v...)
 	}, nil)
 }
 
@@ -208,6 +207,6 @@ func VeryVerbose(v ...any) {
 		return
 	}
 	std.output(1, LevelVeryVerbose, func(b []byte) []byte {
-		return fmt.Append(b, v...)
+		return AppendMsg(b, v...)
 	}, nil)
 }

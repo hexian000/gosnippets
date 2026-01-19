@@ -4,6 +4,7 @@
 package slog
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"runtime"
@@ -77,17 +78,34 @@ func (l *Logger) output(calldepth int, level Level, appendMessage func([]byte) [
 	})
 }
 
+// AppendMsgf appends a formatted message to the given byte slice.
+func AppendMsgf(b []byte, format string, v ...any) []byte {
+	return fmt.Appendf(b, format, v...)
+}
+
+// AppendMsg appends a message to the given byte slice.
+func AppendMsg(b []byte, v ...any) []byte {
+	buf := bytes.NewBuffer(b)
+	for i, arg := range v {
+		if i > 0 {
+			buf.WriteByte(' ')
+		}
+		fmt.Fprint(buf, arg)
+	}
+	return buf.Bytes()
+}
+
 // Outputf is the low-level interface to write arbitrary log messages.
-func (l *Logger) Outputf(calldepth int, level Level, extra func(io.Writer) error, format string, v ...interface{}) error {
+func (l *Logger) Outputf(calldepth int, level Level, extra func(io.Writer) error, format string, v ...any) error {
 	return l.output(calldepth+1, level, func(b []byte) []byte {
-		return fmt.Appendf(b, format, v...)
+		return AppendMsgf(b, format, v...)
 	}, extra)
 }
 
 // Output is the low-level interface to write arbitary log messages.
 func (l *Logger) Output(calldepth int, level Level, extra func(io.Writer) error, v ...any) error {
 	return l.output(calldepth+1, level, func(b []byte) []byte {
-		return fmt.Append(b, v...)
+		return AppendMsg(b, v...)
 	}, extra)
 }
 
@@ -112,7 +130,7 @@ func (l *Logger) Fatalf(format string, v ...any) {
 		return
 	}
 	l.output(1, LevelFatal, func(b []byte) []byte {
-		return fmt.Appendf(b, format, v...)
+		return AppendMsgf(b, format, v...)
 	}, nil)
 }
 
@@ -122,7 +140,7 @@ func (l *Logger) Fatal(v ...any) {
 		return
 	}
 	l.output(1, LevelFatal, func(b []byte) []byte {
-		return fmt.Append(b, v...)
+		return AppendMsg(b, v...)
 	}, nil)
 }
 
@@ -132,7 +150,7 @@ func (l *Logger) Errorf(format string, v ...any) {
 		return
 	}
 	l.output(1, LevelError, func(b []byte) []byte {
-		return fmt.Appendf(b, format, v...)
+		return AppendMsgf(b, format, v...)
 	}, nil)
 }
 
@@ -142,7 +160,7 @@ func (l *Logger) Error(v ...any) {
 		return
 	}
 	l.output(1, LevelError, func(b []byte) []byte {
-		return fmt.Append(b, v...)
+		return AppendMsg(b, v...)
 	}, nil)
 }
 
@@ -152,7 +170,7 @@ func (l *Logger) Warningf(format string, v ...any) {
 		return
 	}
 	l.output(1, LevelWarning, func(b []byte) []byte {
-		return fmt.Appendf(b, format, v...)
+		return AppendMsgf(b, format, v...)
 	}, nil)
 }
 
@@ -162,7 +180,7 @@ func (l *Logger) Warning(v ...any) {
 		return
 	}
 	l.output(1, LevelWarning, func(b []byte) []byte {
-		return fmt.Append(b, v...)
+		return AppendMsg(b, v...)
 	}, nil)
 }
 
@@ -172,7 +190,7 @@ func (l *Logger) Noticef(format string, v ...any) {
 		return
 	}
 	l.output(1, LevelNotice, func(b []byte) []byte {
-		return fmt.Appendf(b, format, v...)
+		return AppendMsgf(b, format, v...)
 	}, nil)
 }
 
@@ -182,7 +200,7 @@ func (l *Logger) Notice(v ...any) {
 		return
 	}
 	l.output(1, LevelNotice, func(b []byte) []byte {
-		return fmt.Append(b, v...)
+		return AppendMsg(b, v...)
 	}, nil)
 }
 
@@ -192,7 +210,7 @@ func (l *Logger) Infof(format string, v ...any) {
 		return
 	}
 	l.output(1, LevelInfo, func(b []byte) []byte {
-		return fmt.Appendf(b, format, v...)
+		return AppendMsgf(b, format, v...)
 	}, nil)
 }
 
@@ -202,7 +220,7 @@ func (l *Logger) Info(v ...any) {
 		return
 	}
 	l.output(1, LevelInfo, func(b []byte) []byte {
-		return fmt.Append(b, v...)
+		return AppendMsg(b, v...)
 	}, nil)
 }
 
@@ -212,7 +230,7 @@ func (l *Logger) Debugf(format string, v ...any) {
 		return
 	}
 	l.output(1, LevelDebug, func(b []byte) []byte {
-		return fmt.Appendf(b, format, v...)
+		return AppendMsgf(b, format, v...)
 	}, nil)
 }
 
@@ -222,7 +240,7 @@ func (l *Logger) Debug(v ...any) {
 		return
 	}
 	l.output(1, LevelDebug, func(b []byte) []byte {
-		return fmt.Append(b, v...)
+		return AppendMsg(b, v...)
 	}, nil)
 }
 
@@ -232,7 +250,7 @@ func (l *Logger) Verbosef(format string, v ...any) {
 		return
 	}
 	l.output(1, LevelVerbose, func(b []byte) []byte {
-		return fmt.Appendf(b, format, v...)
+		return AppendMsgf(b, format, v...)
 	}, nil)
 }
 
@@ -242,7 +260,7 @@ func (l *Logger) Verbose(v ...any) {
 		return
 	}
 	l.output(1, LevelVerbose, func(b []byte) []byte {
-		return fmt.Append(b, v...)
+		return AppendMsg(b, v...)
 	}, nil)
 }
 
@@ -252,7 +270,7 @@ func (l *Logger) VeryVerbosef(format string, v ...any) {
 		return
 	}
 	l.output(1, LevelVeryVerbose, func(b []byte) []byte {
-		return fmt.Appendf(b, format, v...)
+		return AppendMsgf(b, format, v...)
 	}, nil)
 }
 
@@ -262,6 +280,6 @@ func (l *Logger) VeryVerbose(v ...any) {
 		return
 	}
 	l.output(1, LevelVeryVerbose, func(b []byte) []byte {
-		return fmt.Append(b, v...)
+		return AppendMsg(b, v...)
 	}, nil)
 }

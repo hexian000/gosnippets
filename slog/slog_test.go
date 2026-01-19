@@ -186,21 +186,21 @@ func TestLoggerFormatFunctions(t *testing.T) {
 		expected string
 	}{
 		{"Fatalf", func() { logger.Fatalf("test %d", 42) }, "test 42"},
-		{"Fatal", func() { logger.Fatal("test", 42) }, "test42"},
+		{"Fatal", func() { logger.Fatal("test", 42) }, "test 42"},
 		{"Errorf", func() { logger.Errorf("error %s", "msg") }, "error msg"},
-		{"Error", func() { logger.Error("error", "msg") }, "errormsg"},
+		{"Error", func() { logger.Error("error", "msg") }, "error msg"},
 		{"Warningf", func() { logger.Warningf("warn %v", true) }, "warn true"},
-		{"Warning", func() { logger.Warning("warn", true) }, "warntrue"},
+		{"Warning", func() { logger.Warning("warn", true) }, "warn true"},
 		{"Noticef", func() { logger.Noticef("notice %d", 1) }, "notice 1"},
-		{"Notice", func() { logger.Notice("notice", 1) }, "notice1"},
+		{"Notice", func() { logger.Notice("notice", 1) }, "notice 1"},
 		{"Infof", func() { logger.Infof("info %s", "test") }, "info test"},
-		{"Info", func() { logger.Info("info", "test") }, "infotest"},
+		{"Info", func() { logger.Info("info", "test") }, "info test"},
 		{"Debugf", func() { logger.Debugf("debug %d", 99) }, "debug 99"},
-		{"Debug", func() { logger.Debug("debug", 99) }, "debug99"},
+		{"Debug", func() { logger.Debug("debug", 99) }, "debug 99"},
 		{"Verbosef", func() { logger.Verbosef("verbose %s", "x") }, "verbose x"},
-		{"Verbose", func() { logger.Verbose("verbose", "x") }, "verbosex"},
+		{"Verbose", func() { logger.Verbose("verbose", "x") }, "verbose x"},
 		{"VeryVerbosef", func() { logger.VeryVerbosef("vv %d", 0) }, "vv 0"},
-		{"VeryVerbose", func() { logger.VeryVerbose("vv", 0) }, "vv0"},
+		{"VeryVerbose", func() { logger.VeryVerbose("vv", 0) }, "vv 0"},
 	}
 
 	for _, tt := range tests {

@@ -118,7 +118,7 @@ func Textf(level Level, txt string, format string, v ...any) {
 		return
 	}
 	std.output(1, level, func(b []byte) []byte {
-		return fmt.Appendf(b, format, v...)
+		return AppendMsgf(b, format, v...)
 	}, func(w io.Writer) error {
 		return writeText(w, txt)
 	})
@@ -130,7 +130,7 @@ func Text(level Level, txt string, v ...any) {
 		return
 	}
 	std.output(1, level, func(b []byte) []byte {
-		return fmt.Append(b, v...)
+		return AppendMsg(b, v...)
 	}, func(w io.Writer) error {
 		return writeText(w, txt)
 	})
@@ -175,7 +175,7 @@ func Binaryf(level Level, bin []byte, format string, v ...any) {
 		return
 	}
 	std.output(1, level, func(b []byte) []byte {
-		return fmt.Appendf(b, format, v...)
+		return AppendMsgf(b, format, v...)
 	}, func(w io.Writer) error {
 		return writeBinary(w, bin)
 	})
@@ -187,7 +187,7 @@ func Binary(level Level, bin []byte, v ...any) {
 		return
 	}
 	std.output(1, level, func(b []byte) []byte {
-		return fmt.Append(b, v...)
+		return AppendMsg(b, v...)
 	}, func(w io.Writer) error {
 		return writeBinary(w, bin)
 	})
@@ -245,7 +245,7 @@ func Stackf(level Level, calldepth int, format string, v ...any) {
 	var pc [stackMaxDepth]uintptr
 	n := runtime.Callers(calldepth+2, pc[:])
 	std.output(1, level, func(b []byte) []byte {
-		return fmt.Appendf(b, format, v...)
+		return AppendMsgf(b, format, v...)
 	}, func(w io.Writer) error {
 		return writeStacktrace(w, pc[:n])
 	})
@@ -259,7 +259,7 @@ func Stack(level Level, calldepth int, v ...any) {
 	var pc [stackMaxDepth]uintptr
 	n := runtime.Callers(calldepth+2, pc[:])
 	std.output(1, level, func(b []byte) []byte {
-		return fmt.Append(b, v...)
+		return AppendMsg(b, v...)
 	}, func(w io.Writer) error {
 		return writeStacktrace(w, pc[:n])
 	})
