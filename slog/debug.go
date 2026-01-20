@@ -34,11 +34,13 @@ func Check(cond bool, v ...any) {
 
 const (
 	indent   = "  "
-	hardWrap = 80
 	tabSpace = "    "
 )
 
-func writeText(w io.Writer, txt string) error {
+func writeText(w io.Writer, txt string, hardWrap int) error {
+	if hardWrap < 4 {
+		hardWrap = 80
+	}
 	var buf [256]byte
 	b := buf[:]
 	newline := true
@@ -113,14 +115,14 @@ func writeText(w io.Writer, txt string) error {
 }
 
 // Textf logs a long text message at the given level.
-func Textf(level Level, txt string, format string, v ...any) {
+func Textf(level Level, txt string, wrap int, format string, v ...any) {
 	if !CheckLevel(level) {
 		return
 	}
 	std.output(1, level, func(b []byte) []byte {
 		return AppendMsgf(b, format, v...)
 	}, func(w io.Writer) error {
-		return writeText(w, txt)
+		return writeText(w, txt, wrap)
 	})
 }
 
@@ -132,17 +134,19 @@ func Text(level Level, txt string, v ...any) {
 	std.output(1, level, func(b []byte) []byte {
 		return AppendMsg(b, v...)
 	}, func(w io.Writer) error {
-		return writeText(w, txt)
+		return writeText(w, txt, 0)
 	})
 }
 
-func writeBinary(w io.Writer, bin []byte) error {
+func writeBinary(w io.Writer, bin []byte, binWrap int) error {
+	if binWrap < 1 {
+		binWrap = 16
+	}
 	var buf [256]byte
 	b := buf[:]
-	wrap := 16
-	for i := 0; i < len(bin); i += wrap {
+	for i := 0; i < len(bin); i += binWrap {
 		b = fmt.Appendf(b, "%s%p: ", indent, bin[i:])
-		for j := 0; j < wrap; j++ {
+		for j := 0; j < binWrap; j++ {
 			if (i + j) < len(bin) {
 				b = fmt.Appendf(b, "%02X ", bin[i+j])
 			} else {
@@ -150,7 +154,7 @@ func writeBinary(w io.Writer, bin []byte) error {
 			}
 		}
 		b = append(b, ' ')
-		for j := 0; j < wrap; j++ {
+		for j := 0; j < binWrap; j++ {
 			r := ' '
 			if (i + j) < len(bin) {
 				r = rune(bin[i+j])
@@ -170,14 +174,14 @@ func writeBinary(w io.Writer, bin []byte) error {
 }
 
 // Binaryf logs binary data at the given level.
-func Binaryf(level Level, bin []byte, format string, v ...any) {
+func Binaryf(level Level, bin []byte, wrap int, format string, v ...any) {
 	if !CheckLevel(level) {
 		return
 	}
 	std.output(1, level, func(b []byte) []byte {
 		return AppendMsgf(b, format, v...)
 	}, func(w io.Writer) error {
-		return writeBinary(w, bin)
+		return writeBinary(w, bin, wrap)
 	})
 }
 
@@ -189,7 +193,7 @@ func Binary(level Level, bin []byte, v ...any) {
 	std.output(1, level, func(b []byte) []byte {
 		return AppendMsg(b, v...)
 	}, func(w io.Writer) error {
-		return writeBinary(w, bin)
+		return writeBinary(w, bin, 0)
 	})
 }
 

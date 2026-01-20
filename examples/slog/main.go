@@ -36,7 +36,7 @@ func main() {
 	slog.Warning("Warning: Issues that may be ignored.")
 	slog.Error("Error: Issues that shouldn't be ignored.")
 	slog.Fatal("Fatal: Serious problems that are likely to cause the program to exit.")
-	slog.Temporary("Temporary: Temporary logs are printed in any debug build regardless of log level.")
+	slog.Temporary("Temporary: Debug logs are printed regardless of log level.")
 
 	s := strings.Repeat("The quick brown fox jumps over the lazy dog. 🍌 😂 🐇 ☕ 🎈", 8) + `
 1	2	3	4	5	6	7	8	9	10	11	12	13	14	15	16	17	18	19	20	21	22	23	
@@ -45,8 +45,8 @@ func main() {
 1	2	3	slog.Default().SetLevel(slog.LevelNotice)
 		slog.Default().SetLevel(slog.LevelVerbose)
 	slog.Debug("wa")` + "\r\n\r\n"
-	slog.Textf(slog.LevelDebug, s, "wa")
-	slog.Binaryf(slog.LevelWarning, []byte(s), "wa")
+	slog.Text(slog.LevelDebug, s, "wa")
+	slog.Binary(slog.LevelWarning, []byte(s), "wa")
 	testStackInlined()
 	slog.Println(0, slog.LevelDebug, nil, "test1")
 	slog.Default().Println(0, slog.LevelDebug, nil, "test2")
