@@ -391,7 +391,7 @@ func TestTextf(t *testing.T) {
 	slog.Default().SetLevel(slog.LevelDebug)
 
 	testText := "hello\nworld"
-	slog.Textf(slog.LevelDebug, testText, "formatted %s", "msg")
+	slog.Textf(slog.LevelDebug, testText, -1, "formatted %s", "msg")
 
 	output := buf.String()
 	if !strings.Contains(output, "formatted msg") {
@@ -423,7 +423,7 @@ func TestBinaryf(t *testing.T) {
 	slog.Default().SetLevel(slog.LevelDebug)
 
 	testData := []byte{0x41, 0x42, 0x43} // "ABC"
-	slog.Binaryf(slog.LevelDebug, testData, "binary %d", 123)
+	slog.Binaryf(slog.LevelDebug, testData, -1, "binary %d", 123)
 
 	output := buf.String()
 	if !strings.Contains(output, "binary 123") {
