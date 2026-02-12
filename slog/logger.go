@@ -19,6 +19,7 @@ type Logger struct {
 	out        output
 	outMu      sync.Mutex
 	level      atomic.Int32
+	flags      atomic.Uint32
 	filePrefix atomic.Pointer[string]
 }
 
@@ -36,6 +37,14 @@ const (
 	OutputTerminal
 	OutputWriter
 	OutputSyslog
+)
+
+type Flags int
+
+const (
+	FlagNone  Flags = iota
+	FlagUTC         = 0x0001
+	FlagNanos       = 0x0002
 )
 
 // SetOutput sets the output type and parameters for the logger.
@@ -60,6 +69,11 @@ func (l *Logger) SetOutput(t OutputType, v ...any) {
 	l.out = w
 }
 
+// SetFlags sets the flags for the logger.
+func (l *Logger) SetFlags(flags Flags) {
+	l.flags.Store(uint32(flags))
+}
+
 func (l *Logger) output(calldepth int, level Level, appendMsg func([]byte) []byte, writeExtra func(io.Writer) error) error {
 	now := time.Now()
 	_, file, line, ok := runtime.Caller(calldepth + 1)
@@ -73,6 +87,7 @@ func (l *Logger) output(calldepth int, level Level, appendMsg func([]byte) []byt
 	defer l.outMu.Unlock()
 	return l.out.WriteMsg(&message{
 		timestamp:  now,
+		flags:      Flags(l.flags.Load()),
 		level:      level,
 		file:       file,
 		line:       line,

@@ -242,12 +242,12 @@ func writeStacktrace(w io.Writer, pc []uintptr) error {
 const stackMaxDepth = 256
 
 // Stackf logs a stack trace at the given level.
-func Stackf(level Level, calldepth int, format string, v ...any) {
+func Stackf(level Level, skip int, format string, v ...any) {
 	if !CheckLevel(level) {
 		return
 	}
 	var pc [stackMaxDepth]uintptr
-	n := runtime.Callers(calldepth+2, pc[:])
+	n := runtime.Callers(skip+2, pc[:])
 	std.output(1, level, func(b []byte) []byte {
 		return AppendMsgf(b, format, v...)
 	}, func(w io.Writer) error {
@@ -256,13 +256,16 @@ func Stackf(level Level, calldepth int, format string, v ...any) {
 }
 
 // Stack logs a stack trace at the given level.
-func Stack(level Level, calldepth int, v ...any) {
+func Stack(level Level, skip int, v ...any) {
 	if !CheckLevel(level) {
 		return
 	}
 	var pc [stackMaxDepth]uintptr
-	n := runtime.Callers(calldepth+2, pc[:])
+	n := runtime.Callers(skip+2, pc[:])
 	std.output(1, level, func(b []byte) []byte {
+		if len(v) == 0 {
+			return AppendMsg(b, "stack traceback:")
+		}
 		return AppendMsg(b, v...)
 	}, func(w io.Writer) error {
 		return writeStacktrace(w, pc[:n])

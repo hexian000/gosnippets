@@ -13,6 +13,7 @@ func init() {
 	std := slog.Default()
 	std.SetOutput(slog.OutputTerminal, os.Stdout)
 	std.SetLevel(slog.LevelVeryVerbose)
+	std.SetFlags(slog.FlagUTC)
 	if _, file, _, ok := runtime.Caller(0); ok {
 		std.SetFilePrefix(filepath.Dir(file) + "/")
 	}
@@ -20,7 +21,7 @@ func init() {
 }
 
 func testStack() {
-	slog.Stackf(slog.LevelDebug, 0, "wa")
+	slog.Stack(slog.LevelDebug, 0)
 }
 
 func testStackInlined() {
