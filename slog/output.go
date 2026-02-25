@@ -66,7 +66,6 @@ func appendTimestamp(b []byte, t time.Time, flags Flags) []byte {
 		return t.AppendFormat(b, TimeLayoutNano)
 	}
 	return t.AppendFormat(b, TimeLayout)
-
 }
 
 func (w *textWriter) WriteMsg(m *message) error {
