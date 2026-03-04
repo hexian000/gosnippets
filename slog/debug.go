@@ -42,7 +42,7 @@ func writeText(w io.Writer, txt string, hardWrap int) error {
 		hardWrap = 80
 	}
 	var buf [256]byte
-	b := buf[:]
+	b := buf[:0]
 	newline := true
 	cr := false
 	line, column := 0, 0
@@ -143,7 +143,7 @@ func writeBinary(w io.Writer, bin []byte, binWrap int) error {
 		binWrap = 16
 	}
 	var buf [256]byte
-	b := buf[:]
+	b := buf[:0]
 	for i := 0; i < len(bin); i += binWrap {
 		b = fmt.Appendf(b, "%s%p: ", indent, bin[i:])
 		for j := 0; j < binWrap; j++ {
