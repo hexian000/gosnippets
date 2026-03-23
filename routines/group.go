@@ -136,6 +136,9 @@ func (g *limitedGroup) Go(f func()) error {
 	select {
 	case <-g.closeCh:
 		return ErrClosed
+	default:
+	}
+	select {
 	case g.routineCh <- struct{}{}:
 	default:
 		return ErrConcurrencyLimit
